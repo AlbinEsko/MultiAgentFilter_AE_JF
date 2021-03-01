@@ -5,7 +5,7 @@ Created on Mon Mar  1 13:08:34 2021
 @author: golf_
 """
 inputs = (
-        ("test1", "label")
+        ("test1", "label"),
         )
 
 def perform(level, box, options):
