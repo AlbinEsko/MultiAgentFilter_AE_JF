@@ -6,6 +6,7 @@ Created on Mon Mar  1 13:08:34 2021
 """
 from array import *
 from pymclevel import alphaMaterials
+import graph
 
 from typing import List, Any
 
