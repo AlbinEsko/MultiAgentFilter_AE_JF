@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 from array import *
-import random
-
 def connectivity(nodes):
     graph = creategraph(nodes)
     regions = []
@@ -21,10 +19,8 @@ def connectivity(nodes):
         while(len(stack) != 0):
             currentNode = stack.pop()
             region.append(currentNode)
-            for i in graph[currentNode[1]][currentNode[0]]:
+            for i in graph[currentNode[0]][currentNode[1]]:
                 nextNode = i
-                print(nextNode)
-                print("###")
                 #print(graph[nextNode[1]][nextNode[0]])
                 if(nextNode[2] > diffThresh):
                     continue
@@ -65,7 +61,8 @@ def creategraph(nodes):
             if(z < H-1):
                 graph[z][x].append([x, z+1, nodes[z+1][x]-nodes[z][x]])
     return graph
-    
+ 
+    '''
 def test():
     array = [[random.choice((0,1,2,3)) for i in range(10)] for j in range(10)]
     connectedNodes = connectivity(array)
@@ -75,3 +72,4 @@ def test():
 
     
 test()
+'''

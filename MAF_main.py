@@ -6,7 +6,8 @@ Created on Mon Mar  1 13:08:34 2021
 """
 from array import *
 from pymclevel import alphaMaterials
-
+import utilityFunctions as uf
+import Graph as Graph
 from typing import List, Any
 
 inputs = (
@@ -16,9 +17,16 @@ inputs = (
 
 def perform(level, box, options):
     print("Armed and ready")
-    createHeightMap(level, box)
-
-
+    hgtMap = createHeightMap(level, box)
+    '''
+    regions=Graph.connectivity(hgtMap)
+    print(regions[0])
+    blocktype=0
+    for r in regions:
+        blocktype = blocktype+1
+        for b in r:
+            uf.setBlock(level,(blocktype,0),box.minx+b[1],100,box.minz+b[0])
+'''
 def createHeightMap(level, box):
     row = box.maxx - box.minx #vågräta
     column = box.maxz - box.minz #lodräta
@@ -39,3 +47,6 @@ def createHeightMap(level, box):
         print(r)
 
     return heightmap
+
+
+
