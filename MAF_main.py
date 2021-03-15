@@ -18,15 +18,9 @@ inputs = (
 def perform(level, box, options):
     print("Armed and ready")
     hgtMap = createHeightMap(level, box)
-    '''
-    regions=Graph.connectivity(hgtMap)
-    print(regions[0])
-    blocktype=0
-    for r in regions:
-        blocktype = blocktype+1
-        for b in r:
-            uf.setBlock(level,(blocktype,0),box.minx+b[1],100,box.minz+b[0])
-'''
+    markRegions(level, box, hgtMap)
+    
+
 def createHeightMap(level, box):
     row = box.maxx - box.minx #vågräta
     column = box.maxz - box.minz #lodräta
@@ -48,5 +42,11 @@ def createHeightMap(level, box):
 
     return heightmap
 
-
-
+def markRegions(level, box, hgtMap):
+    regions=Graph.connectivity(hgtMap)
+    print(regions[0])
+    blocktype=0
+    for r in regions:
+        blocktype = blocktype+1
+        for b in r:
+            uf.setBlock(level,(blocktype,0),box.minx+b[0],100,box.minz+b[1])
