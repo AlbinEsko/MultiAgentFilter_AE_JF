@@ -8,34 +8,43 @@ Returns: List of lists containing 2D coordinates for any region
 def connectivity(nodes):
     graph = creategraph(nodes)
     regions = []
-    diffThresh = 2
+    diffThresh = 3
     H = len(nodes)
     W = len(nodes[0])
-    print(H,W)
+    #print(H,W)
     visited = [False for i in range(W*H)]
     region = []
     stack = []
-    #print("start find regions")
+    print("start find regions")
     while(not all(visited)):
         start = findStartNode(H,W,visited) #loops through visited 2d bool array to find a false then return that pos
+        regionAvgHeight = 0.0
         #print("Start of new region: ", start)
         stack.append(start)
         visited[start] = True #set start pos as visited
         while(len(stack) != 0):
             currentNode = stack.pop()
             region.append([currentNode % W, currentNode / W])
-            #print(currentNode % W, currentNode / W)
+            regionAvgHeight = (regionAvgHeight*(len(region)-1) + nodes[currentNode / W][currentNode % W]) / len(region)
+            #print('avgHgt ', regionAvgHeight)
+            #print("pos height ", nodes[currentNode / W][currentNode % W])
             for i in graph[currentNode]:
                 nextNode = i[0]
                 weight = i[1]
-                print(nextNode , weight)
-                if(abs(weight) > diffThresh):
+                #print(nextNode , weight)
+                #if(abs(weight) > diffThresh):
+                #    continue
+                nextDiff = nodes[nextNode / W][nextNode % W] - regionAvgHeight
+                #print("diff ",nextDiff)
+                if(abs(nextDiff) > diffThresh):
                     continue
                 if(not visited[nextNode]):
                     visited[nextNode] = True
                     stack.append(nextNode)
         regions.append(region)
+        #print(regionAvgHeight)
         region = []
+        regionAvgHeight = 0.0
     return regions
         
     '''
@@ -70,15 +79,14 @@ def creategraph(nodes):
                 graph[x+z*W].append([x + (z+1)*W, nodes[z+1][x]-nodes[z][x]])
     return graph
  
-'''
+
 def test():
     array = [[random.choice((0,1,2,3,4,5,6,7,8,9)) for i in range(10)] for j in range(15)]
     connectedNodes = connectivity(array)
     #print(connectedNodes)
-    for r in connectedNodes:
-        print(r)
-        print(len(r))
+    #for r in connectedNodes:
+        #print(r)
+        #print(len(r))
 
-    
-test()
-'''
+if __name__ == "__main__":
+    test()

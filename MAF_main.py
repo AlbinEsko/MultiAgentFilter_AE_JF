@@ -16,7 +16,7 @@ inputs = (
 
 
 def perform(level, box, options):
-    print("Armed and ready")
+    print("Performing")
     hgtMap = createHeightMap(level, box)
     markRegions(level, box, hgtMap)
     
@@ -26,8 +26,8 @@ def createHeightMap(level, box):
     column = box.maxz - box.minz #lodräta
     heightmap = [[0 for i in range(row)] for j in range(column)]
 
-    for r in heightmap:
-        print(r)
+    #for r in heightmap:
+        #print(r)
 
     for z in range(column):  # range(box.minx, box.maxx, 1):
         for x in range(row):  # range(box.minz, box.maxz, 1):
@@ -37,16 +37,17 @@ def createHeightMap(level, box):
 
                     break
 
-    for r in heightmap:
-        print(r)
+    #for r in heightmap:
+        #print(r)
 
     return heightmap
 
 def markRegions(level, box, hgtMap):
     regions=Graph.connectivity(hgtMap)
-    print(regions[0])
-    blocktype=0
+    #print(regions[0])
+    blocktype=35
+    blockid=0
     for r in regions:
-        blocktype = blocktype+1
+        blockid = (blockid+1) % 16
         for b in r:
-            uf.setBlock(level,(blocktype,0),box.minx+b[0],100,box.minz+b[1])
+            uf.setBlock(level,(blocktype,blockid),box.minx+b[0],100,box.minz+b[1])
