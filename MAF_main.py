@@ -8,6 +8,7 @@ from array import *
 from pymclevel import alphaMaterials
 import utilityFunctions as uf
 import Graph as Graph
+import BlockIDs as Blocks
 from typing import List, Any
 
 inputs = (
@@ -25,6 +26,7 @@ def createHeightMap(level, box):
     row = box.maxx - box.minx #vågräta
     column = box.maxz - box.minz #lodräta
     heightmap = [[0 for i in range(row)] for j in range(column)]
+    liquidmap = [[0 for i in range(row)] for j in range(column)]
 
     #for r in heightmap:
         #print(r)
@@ -32,13 +34,20 @@ def createHeightMap(level, box):
     for z in range(column):  # range(box.minx, box.maxx, 1):
         for x in range(row):  # range(box.minz, box.maxz, 1):
             for y in range(box.maxy, box.miny, -1):
-                if (level.blockAt(box.minx+x, y, box.minz+z)) != 0:
+                block = level.blockAt(box.minx+x, y, box.minz+z) 
+                if block in Blocks.getGrounds():
                     heightmap[z][x] = y
+                    blockabove = level.blockAt(box.minx+x, y+1, box.minz+z)
+                    if blockabove in Blocks.getLiquids():
+                        if blockabove in [8, 9, 79]:
+                            liquidmap[z][x] = 1
+                        else:
+                            liquidmap[z][x] = 2                   
 
                     break
 
-    #for r in heightmap:
-        #print(r)
+    #for r in liquidmap:
+    #    print(r)
 
     return heightmap
 
