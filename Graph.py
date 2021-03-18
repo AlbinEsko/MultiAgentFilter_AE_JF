@@ -46,7 +46,41 @@ def connectivity(nodes):
         region = []
         regionAvgHeight = 0.0
     return regions
-        
+
+def liquidMap(nodes):
+    graph = creategraph(nodes)
+    regions = []
+    H=len(nodes)
+    W=len(nodes[0])
+    visited = [False for i in range(W * H)]
+    region = []
+    stack = []
+    while (not all(visited)):
+        start = findStartNode(H, W, visited)
+        stack.append(start)
+        visited[start] = True
+        while(len(stack) != 0):
+            currentNode = stack.pop()
+            curretType = nodes[currentNode / W][currentNode % W]
+            region.append([currentNode % W, currentNode / W])
+            for i in graph[currentNode]:
+                nextNode = i[0]
+                weight = i[1]
+                # print(nextNode , weight)
+                # if(abs(weight) > diffThresh):
+                #    continue
+                nextType = nodes[nextNode / W][nextNode % W]
+                # print("diff ",nextDiff)
+                if (curretType != nextType):
+                    continue
+                if (not visited[nextNode]):
+                    visited[nextNode] = True
+                    stack.append(nextNode)
+        regions.append(region)
+        region = []
+    return regions
+
+
     '''
     while any is false in visited
         pick a position with value false

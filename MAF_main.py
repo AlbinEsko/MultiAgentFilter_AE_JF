@@ -18,8 +18,8 @@ inputs = (
 
 def perform(level, box, options):
     print("Performing")
-    hgtMap = createHeightMap(level, box)
-    markRegions(level, box, hgtMap)
+    hgtMap, liquidmap = createHeightMap(level, box)
+    markRegions(level, box, hgtMap, liquidmap)
     
 
 def createHeightMap(level, box):
@@ -49,10 +49,11 @@ def createHeightMap(level, box):
     #for r in liquidmap:
     #    print(r)
 
-    return heightmap
+    return heightmap, liquidmap
 
-def markRegions(level, box, hgtMap):
-    regions=Graph.connectivity(hgtMap)
+def markRegions(level, box, hgtMap, liquidmap):
+    #regions=Graph.connectivity(hgtMap)
+    regions= Graph.liquidMap(liquidmap)
     #print(regions[0])
     blocktype=35
     blockid=0
