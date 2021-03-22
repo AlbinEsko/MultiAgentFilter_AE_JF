@@ -80,3 +80,15 @@ class RidgeAgent:
             
     def IsDone(self):
         return self.tokens <= 0
+    
+    def Turn(self, CCWdegrees = 0, axis = [0,1,0]):
+        vec = self.dir
+        rotation_radians = np.radians(degrees)
+        rotation_axis = np.array(axis)
+        rotation_vector = rotation_radians * rotation_axis
+        rotation = R.from_rotvec(rotation_vector)
+        rotated_vec = rotation.apply(vec)
+        rotated_vec[0] = round(rotated_vec[0])
+        rotated_vec[1] = round(rotated_vec[1])
+        rotated_vec[2] = round(rotated_vec[2])
+        self.dir = rotated_vec
