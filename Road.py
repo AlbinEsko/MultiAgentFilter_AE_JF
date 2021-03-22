@@ -89,7 +89,15 @@ class ExtendorAgent:
     
     def BFS(self, start):
         path = []
-        minSpanTree = CreateMinSpanTree(start)
+        minSpanTreeData = CreateMinSpanTree(start)
+        minSpanTree = minSpanTreeData[1]
+        goal = minSpanTreeData[0]
+        nodeID = goal
+        while(nodeID != start):
+            path.append(nodeID)
+            nodeID = minSpanTree[nodeID]
+        path.append(start)
+        return path
         
     
     
