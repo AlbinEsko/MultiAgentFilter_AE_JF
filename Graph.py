@@ -1,6 +1,46 @@
 # -*- coding: utf-8 -*-
 from array import *
 import random
+
+class Graph:
+    def __init__(self, NrNodes, weighted = False, withDiagonals = False):
+        self.graph = [[] for i in range(NrNodes)]
+        
+    def get_NrNodes(self):
+        return len(self.graph)
+    
+    def createOrthogonalGraphFrom2D(self,W,H, data):
+    for z in range(H):
+        for x in range(W):
+            if(x > 0):
+                self.graph[x+z*W].append([(x-1) + z*W, data[z][x-1]-data[z][x]])
+            if(x < W-1):
+                self.graph[x+z*W].append([(x+1) + z*W, data[z][x+1]-data[z][x]])
+            if(z > 0):
+                self.graph[x+z*W].append([x + (z-1)*W, data[z-1][x]-data[z][x]])
+            if(z < H-1):
+                self.graph[x+z*W].append([x + (z+1)*W, data[z+1][x]-data[z][x]])
+    return graph
+
+    def createDiagOrthogonalGraphFrom2D(self,W,H, data):
+        for z in range(H):
+            for x in range(W):
+                if(x > 0):
+                    self.graph[x+z*W].append([(x-1) + z*W, data[z][x-1]-data[z][x]])
+                if(x < W-1):
+                    self.graph[x+z*W].append([(x+1) + z*W, data[z][x+1]-data[z][x]])
+                if(z > 0):
+                    self.graph[x+z*W].append([x + (z-1)*W, data[z-1][x]-data[z][x]])
+                if(z < H-1):
+                    self.graph[x+z*W].append([x + (z+1)*W, data[z+1][x]-data[z][x]])
+        return graph
+
+#class Node: #currently only an integer
+    
+class DirectedEdge:
+    def __init__(self, to, weight):
+        self.to = to
+        self.weight = weight
 '''
 Creates a graph from a 2D array and creates connected regions with a DFS traversal
 Returns: List of lists containing 2D coordinates for any region
