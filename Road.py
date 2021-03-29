@@ -7,8 +7,6 @@ from pygame.math import Vector2 as Vector
 import queue as Queue
 
 class RoadSystem:
-    roadMap = []
-    roadGraph = []
     intersectionGraph = []
     agents = []
     
@@ -16,7 +14,8 @@ class RoadSystem:
         self.heightMap = hgtMap
         self.liquidMap = lqdMap
         self.roadMap = [[0 for x in range(box.width)] for z in range(box.length)]
-        self.roadGraph = Graph.MakeGraph(box.width * box.length)
+        self.roadGraph = Graph.Graph(box.width * box.length)
+        self.roadGraph.createDiagOrthogonalGraphFrom2D(roadMap)
         self.intersectionGraph.append([])
         agents.append(ExtendorAgent(self, startPos))
         
@@ -28,9 +27,6 @@ class RoadSystem:
             self.roadMap[p[1]][p[0]] = 99
         
 class ExtendorAgent:
-    pos = Vector()
-    dir = Vector()
-    speed = 0.0
     def __init__(self, roadSystem, startPos):
         self.roadSystem = roadSystem
         self.speed = 1.0
