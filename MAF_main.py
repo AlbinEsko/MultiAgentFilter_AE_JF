@@ -19,9 +19,16 @@ inputs = (
 def perform(level, box, options):
     print("Performing")
     hgtMap, liquidmap = createHeightMap(level, box)
-    markRegions(level, box, hgtMap, liquidmap)
+    #markRegions(level, box, hgtMap, liquidmap)
     
-
+    graph = Graph.Graph(box.width, box.length)
+    graph.createOrthogonalGraphFrom2D(hgtMap)
+    print("graph created")
+    regions = Graph.newConnectivity(graph, hgtMap)
+    printRegions(level, box, regions)
+    puddles = Graph.newLiquidMap(graph, liquidmap)
+    printRegions(level, box, puddles)
+    
 def createHeightMap(level, box):
     row = box.maxx - box.minx #vågräta
     column = box.maxz - box.minz #lodräta
@@ -51,9 +58,17 @@ def createHeightMap(level, box):
 
     return heightmap, liquidmap
 
+def printRegions(level, box, regions):
+    blocktype=35
+    blockid=0
+    for r in regions:
+        blockid = (blockid+1) % 16
+        for b in r:
+            uf.setBlock(level,(blocktype,blockid),box.minx+b[0],100,box.minz+b[1])
+
 def markRegions(level, box, hgtMap, liquidmap):
-    #regions=Graph.connectivity(hgtMap)
-    regions= Graph.liquidMap(liquidmap)
+    regions=Graph.connectivity(hgtMap)
+    #regions= Graph.liquidMap(liquidmap)
     #print(regions[0])
     blocktype=35
     blockid=0
