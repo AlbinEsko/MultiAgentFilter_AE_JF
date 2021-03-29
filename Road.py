@@ -3,7 +3,7 @@ import numpy as np
 import random as Random
 from scipy.spatial.transform import Rotation as R
 from pygame.math import Vector2 as Vector
-
+import Graph as Graph
 import queue as Queue
 
 class RoadSystem:
@@ -46,12 +46,12 @@ class ExtendorAgent:
         oldPos = self.pos
         self.pos += self.dir * self.speed
         self.dir.rotate(Random.randint(-10,10)) #Needs improvement for the wanted wandering behavior; move to roadMap values of zero
-        return ConvertToBlock(pos) == ConvertToBlock(oldPos)
+        return ConvertToBlock(self.pos) == ConvertToBlock(oldPos)
     
-    def ConvertToBlock(self):
-        blockPos = self.pos
-        blockPos.x = round(blockPos.x)
-        blockPos.y = round(blockPos.y)
+    def ConvertToBlock(self, p):
+        blockPos = p
+        blockPos.x = round(p.x)
+        blockPos.y = round(p.y)
         return blockPos
 
     
@@ -62,11 +62,12 @@ class ExtendorAgent:
             
     '''follow roadmap distance to existing road and log every step'''
     def Suggest(self):
+        path = BFS(self.pos)
         #weighted BFS where higher weights is more attractive
         #untill it reaches a weight "roadWeight"
         
     def CreateMinSpanTree(self, start):
-        enqueqed = [False for i in range(self.roadSystem.roadGraph.NrNodes())]
+        enqueued = [False for i in range(self.roadSystem.roadGraph.NrNodes())]
         minSpanTree = [-1 for i in range(self.roadSystem.roadGraph.NrNodes())]
         queue = Queue.Queue()
         queue.put(start)
@@ -77,7 +78,7 @@ class ExtendorAgent:
                 break
             for e in self.roadSystem.roadGraph[activeNode]:
                 toIndex = e
-                if(!enqueued[toIndex]):
+                if(not enqueued[toIndex]):
                     enqueued[toIndex] = True
                     minSpanTree[toIndex] = activeNode
                     queue.put(toIndex)
