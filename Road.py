@@ -5,22 +5,33 @@ from scipy.spatial.transform import Rotation as R
 from pygame.math import Vector2 as Vector
 import Graph as Graph
 import queue as Queue
+import utilityFunctions as uf
 
 class RoadSystem:
     intersectionGraph = []
     agents = []
     
-    def __init__(self, level, box, hgtMap, lqdMap, startPos):
+    def __init__(self, level, box, hgtMap, lqdMap, origo):
+        print("startPos: ", origo)
+        self.level = level
+        self.origo = origo
         self.heightMap = hgtMap
         self.liquidMap = lqdMap
         self.roadMap = [[0 for x in range(box.width)] for z in range(box.length)]
-        self.roadGraph = Graph.Graph(box.width * box.length)
-        self.roadGraph.createDiagOrthogonalGraphFrom2D(roadMap)
+        self.roadGraph = Graph.Graph(box.width, box.length)
+        self.roadGraph.createDiagOrthogonalGraphFrom2D(self.roadMap)
         self.intersectionGraph.append([])
-        agents.append(ExtendorAgent(self, startPos))
+      
+    def CreateAgents(self, nrAgents):
+        for i in range(nrAgents):
+            self.agents.append(ExtendorAgent(self, Vector(len(self.heightMap[0])/2, len(self.heightMap)/2)))
+        
+    def UpdateAgents(self):
+        for a in self.agents:
+            a.Act()
         
     def Analyze(self, suggestion):
-        CreateRoad(suggestion)
+        self.CreateRoad(suggestion)
         
     def CreateRoad(self, suggestion):
         for p in suggestion:
@@ -30,30 +41,32 @@ class ExtendorAgent:
     def __init__(self, roadSystem, startPos):
         self.roadSystem = roadSystem
         self.speed = 1.0
-        self.pos = Vector(1,0)
+        self.pos = Vector(float(startPos.x), float(startPos.y))
+        self.blockPos = Vector(0,0)
         self.dir = Vector(1,0)
-        self.dir.rotate(Random.randint(0,359))
+        self.dir.rotate_ip(Random.randint(0,359))
         
     def Act(self):
-        if not Move():
+        if not self.Move():
             return
-        if Analyze():
-            Suggest()
+        self.TraceTraveledPath()
+        #if Analyze():
+        #    Suggest()
     
     '''Wander around 
     Keep close to existing roads'''
     def Move(self):
         oldPos = self.pos
         self.pos += self.dir * self.speed
-        self.dir.rotate(Random.randint(-10,10)) #Needs improvement for the wanted wandering behavior; move to roadMap values of zero
-        return ConvertToBlock(self.pos) == ConvertToBlock(oldPos)
+        self.dir.rotate_ip(Random.randint(-10,10)) #Needs improvement for the wanted wandering behavior; move to roadMap values of zero
+        return self.ConvertToBlock(self.pos) == self.ConvertToBlock(oldPos)
     
     def ConvertToBlock(self, p):
-        blockPos = p
-        blockPos.x = round(p.x)
-        blockPos.y = round(p.y)
+        blockPos = Vector(int(p.x),int(p.y))
         return blockPos
-
+    
+    def TraceTraveledPath(self):
+        uf.setBlock(self.roadSystem.level, (35,0), int(self.roadSystem.origo.x + self.pos.x), self.roadSystem.heightMap[int(self.pos.y)][int(self.pos.x)], int(self.roadSystem.origo.y + self.pos.y ))
     
     '''Analyze current position for road coverage'''
     def Analyze(self):

@@ -10,6 +10,8 @@ import utilityFunctions as uf
 import Graph as Graph
 import BlockIDs as Blocks
 from typing import List, Any
+import Road as Road
+from pygame.math import Vector2 as Vector
 
 inputs = (
     ("test1", "label"),
@@ -19,8 +21,17 @@ inputs = (
 def perform(level, box, options):
     print("Performing")
     hgtMap, liquidmap = createHeightMap(level, box)
+    print("height map and liquid map made")
     #markRegions(level, box, hgtMap, liquidmap)
+    boxOrigo = Vector(box.minx, box.minz)
+    roads = Road.RoadSystem(level,box,hgtMap,liquidmap, boxOrigo)
+    print("creating agents")
+    roads.CreateAgents(10)
+    for r in range(20):
+        roads.UpdateAgents()
     
+    
+    '''
     graph = Graph.Graph(box.width, box.length)
     graph.createOrthogonalGraphFrom2D(hgtMap)
     print("graph created")
@@ -28,7 +39,7 @@ def perform(level, box, options):
     printRegions(level, box, regions)
     puddles = Graph.newLiquidMap(graph, liquidmap)
     printRegions(level, box, puddles)
-    
+    '''
 def createHeightMap(level, box):
     row = box.maxx - box.minx #vågräta
     column = box.maxz - box.minz #lodräta
