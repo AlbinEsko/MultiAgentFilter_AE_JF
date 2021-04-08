@@ -128,10 +128,10 @@ class ExtendorAgent:
     '''Analyze current position for road coverage'''
     def Analyze(self):
         if self.roadSystem.roadMap[int(self.pos.y)][int(self.pos.x)] == 0:
-            self.MakeRoad()
+            self.MakeRoadWithDistance()
             
     '''follow roadmap distance to existing road and log every step'''
-    def MakeRoad(self):
+    def MakeRoadWithDistance(self):
         path = []
         path.append([int(self.pos.x), (int(self.pos.y))])
         while True:
@@ -183,9 +183,17 @@ class ExtendorAgent:
         nextX = X
         nextY = Y
         return value, nextX, nextY
-        #weighted BFS where higher weights is more attractive
-        #untill it reaches a weight "roadWeight"
-        
+      
+    def MakeGoodRoad(self):
+        #2 different weight values, Height difference and deviation from shortest
+        #Bad: takes a long winding road to have no height difference
+        #Bad: makes the shortest road extention possible with no regard for height difference
+        #Good but shortsighted: takes the lowest weight among equaly close options
+        #Good but shortsighted: takes the closest option of equaly weighed options
+        #Requirement: never takes a path with a height difference larger than 1
+        #improvement: allow terraforming to take shorter roads
+        #weights/costs: 1 for moving horizontaly, +1 per height movement, +1 per terraform
+    
     def CreateMinSpanTree(self, start):
         enqueued = [False for i in range(self.roadSystem.roadGraph.NrNodes())]
         minSpanTree = [-1 for i in range(self.roadSystem.roadGraph.NrNodes())]
