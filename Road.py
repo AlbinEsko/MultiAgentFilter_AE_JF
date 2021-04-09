@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+import sys
+import heapq
 import numpy as np
 import random as Random
 from pygame.math import Vector2 as Vector
@@ -19,8 +21,8 @@ class RoadSystem:
         self.heightMap = hgtMap
         self.liquidMap = lqdMap
         self.roadMap = [[0 for x in range(self.width)] for z in range(self.height)]
-        self.roadGraph = Graph.Graph(box.width, box.length)
-        self.roadGraph.createDiagOrthogonalGraphFrom2D(self.roadMap)
+        self.graph = Graph.Graph(box.width, box.length,hgtMap,lqdMap)
+        self.create8WayEdges(graph)
         self.intersectionGraph.append([])
         self.SetRoadMapTile(self.width/2,self.height/2)
       
@@ -41,7 +43,7 @@ class RoadSystem:
             
     def SetRoadMapTile(self, X, Y):
         self.roadMap[Y][X] = 99
-        uf.setBlock(self.level, (35,1), int(self.origo.x + X), self.heightMap[Y][X], int(self.origo.y + Y ))
+        uf.setBlock(self.level, (35,1), int(self.origo.x + X), self.roadGraph, int(self.origo.y + Y ))
         self.SpreadRoadCoverage(5, X, Y)
         
     def SpreadRoadCoverage(self, value, X, Y):
@@ -78,7 +80,31 @@ class RoadSystem:
         if botFree and leftFree:
             self.roadMap[Y+1][X-1] = max(self.roadMap[Y+1][X-1], value)
             self.SpreadRoadCoverage(value-1,X-1,Y+1)
-        
+    
+    def create8WayEdges(self, graph):
+        for Y in range(graph.height):
+            for X in range(graph.width):
+                topFree = Y-1 >= 0
+                leftFree = X-1 >= 0
+                botFree = Y+1 < self.roadSystem.height
+                rightFree = X+1 < self.roadSystem.width
+                if topFree:
+                    graph.getNode(x,y).addEdge_xy(x,y-1,graph.width,graph.getNode(x,y-1).height-graph.getNode(x,y).height)
+                if botFree:
+                    graph.getNode(x,y).addEdge_xy(x,y+1,graph.width,graph.getNode(x,y+1).height-graph.getNode(x,y).height)
+                if leftFree:
+                    graph.getNode(x,y).addEdge_xy(x-1,y,graph.width,graph.getNode(x-1,y).height-graph.getNode(x,y).height)
+                if rightFree:
+                    graph.getNode(x,y).addEdge_xy(x+1,y,graph.width,graph.getNode(x+1,y).height-graph.getNode(x,y).height)
+                if leftFree and topFree:
+                    graph.getNode(x,y).addEdge_xy(x-1,y-1,graph.width,graph.getNode(x-1,y-1).height-graph.getNode(x,y).height)
+                if topFree and rightFree:
+                    graph.getNode(x,y).addEdge_xy(x+1,y-1,graph.width,graph.getNode(x+1,y-1).height-graph.getNode(x,y).height)
+                if botFree and rightFree:
+                    graph.getNode(x,y).addEdge_xy(x+1,y+1,graph.width,graph.getNode(x+1,y+1).height-graph.getNode(x,y).height)
+                if botFree and leftFree:
+                    graph.getNode(x,y).addEdge_xy(x-1,y+1,graph.width,graph.getNode(x-1,y+1).height-graph.getNode(x,y).height)
+                    
 class ExtendorAgent:
     def __init__(self, roadSystem, startPos):
         self.roadSystem = roadSystem
@@ -193,6 +219,22 @@ class ExtendorAgent:
         #Requirement: never takes a path with a height difference larger than 1
         #improvement: allow terraforming to take shorter roads
         #weights/costs: 1 for moving horizontaly, +1 per height movement, +1 per terraform
+    
+    def dijkstra(self):
+        visited = [False for i in range(self.roadSystem.roadGraph.NrNodes())]
+        distTo = [sys.maxint for i in range(self.roadSystem.graph.get_NrNodes())]
+        distTo[self.pos.x + self.pos.y * self.roadSystem.width] = 0
+        unvisited = [(distTo[n],n) for n in range(self.roadSystem.graph.get_NrNodes())]
+        heapq.heapify(unvisited)
+        while len(unvisited):
+            un = heapq.heappop(unvisited)
+            current = self.graph[un[1]]
+            visited[un[1]] = True
+            for edge in current.adjacent:
+                if visited[edge.to]:
+                    continue
+                newDist = distTo[un[1]] + edge.
+            
     
     def CreateMinSpanTree(self, start):
         enqueued = [False for i in range(self.roadSystem.roadGraph.NrNodes())]

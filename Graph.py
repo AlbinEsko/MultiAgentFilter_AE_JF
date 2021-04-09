@@ -1,64 +1,73 @@
 # -*- coding: utf-8 -*-
-from array import *
-import random
 
 class Graph:
-    def __init__(self, w, h, weighted = False, withDiagonals = False):
-        self.graph = [[] for i in range(w*h)]
+    def __init__(self, w, h, hgtMap, lqdMap):
+        self.graph = []
         self.width = w
         self.height = h
+        for y in range(h):
+            for x in range(w):
+                self.graph.append(Node(x,y,hgtMap[y][x], lqdMap[y][x]))
         
     def __getitem__(self,index):#overloaded operator[]
         return self.graph[index]
     
+    def getNode(self,x,y):
+        return self.graph[x+y*self.width]
+    
     def get_NrNodes(self):
         return len(self.graph)
+        
     
     def createOrthogonalGraphFrom2D(self, data):
-        for z in range(self.height):
+        for y in range(self.height):
             for x in range(self.width):
-                if(z > 0):#Up
-                    self.graph[x+z*self.width].append(DirectedEdge(x + (z-1) * self.width, data[z-1][x]-data[z][x]))
-                if(z < self.height-1):#Down
-                    self.graph[x+z*self.width].append(DirectedEdge(x + (z+1) * self.width, data[z+1][x]-data[z][x]))
+                if(y > 0):#Up
+                    self.graph[x+y*self.width].append(DirectedEdge(x + (y-1) * self.width, data[y-1][x]-data[y][x]))
+                if(y < self.height-1):#Down
+                    self.graph[x+y*self.width].append(DirectedEdge(x + (y+1) * self.width, data[y+1][x]-data[y][x]))
                 if(x > 0):#Left
-                    self.graph[x+z*self.width].append(DirectedEdge((x-1) + z * self.width, data[z][x-1]-data[z][x]))
+                    self.graph[x+y*self.width].append(DirectedEdge((x-1) + y * self.width, data[y][x-1]-data[y][x]))
                 if(x < self.width-1):#Right
-                    self.graph[x+z*self.width].append(DirectedEdge((x+1) + z * self.width, data[z][x+1]-data[z][x]))
+                    self.graph[x+y*self.width].append(DirectedEdge((x+1) + y * self.width, data[y][x+1]-data[y][x]))
         return self.graph
 
-    def createDiagOrthogonalGraphFrom2D(self, data):
-        for z in range(self.height):
-            for x in range(self.width):
-                if(z > 0):#Up
-                    self.graph[x+z*self.width].append(DirectedEdge(x + (z-1) * self.width, data[z-1][x]-data[z][x]))
-                if(z < self.height-1):#Down
-                    self.graph[x+z*self.width].append(DirectedEdge(x + (z+1) * self.width, data[z+1][x]-data[z][x]))
-                if(x > 0):#Left
-                    self.graph[x+z*self.width].append(DirectedEdge((x-1) + z * self.width, data[z][x-1]-data[z][x]))
-                if(x < self.width-1):#Right
-                    self.graph[x+z*self.width].append(DirectedEdge((x+1) + z * self.width, data[z][x+1]-data[z][x]))
-                    
-                if(z > 0 and x > 0):#Up left
-                    self.graph[x+z*self.width].append(DirectedEdge((x-1) + (z-1) * self.width, data[z-1][x-1]-data[z][x]))
-                if(z > 0 and x < self.width-1):#Up Right
-                    self.graph[x+z*self.width].append(DirectedEdge((x+1) + (z-1) * self.width, data[z-1][x+1]-data[z][x]))
-                if(z < self.height-1 and x > 0):#Down Left
-                    self.graph[x+z*self.width].append(DirectedEdge((x-1) + (z+1) * self.width, data[z+1][x-1]-data[z][x]))
-                if(z < self.height-1 and x < self.width-1):#Down Right
-                    self.graph[x+z*self.width].append(DirectedEdge((x+1) + (z+1) * self.width, data[z+1][x+1]-data[z][x]))
-        return self.graph
 
-#class Node: #currently only an integer
+class Node:
+    def __init__(self, x, y, height, liquid):
+        self.x = x
+        self.y = y
+        self.adjacent = {}
+        self.height = height
+        self.liquid = liquid
+        self.roadVal = 0
+        
+    def addEdge(self, to, weight = 1):
+        self.adjacent[to] = weight
+      
+    def addEdge_xy(self, x, y, width, weight = 1):
+        self.adjacent[x+y*width] = weight
+        
+    def changeEdgeWeight(self, edgeTo, newWeight):
+        self.adjacent[edgeTo] = newWeight
+                
     
+        
 class DirectedEdge:
     def __init__(self, to, weight):
         self.to = to
         self.weight = weight
+
+    def changeWeight(self, newWeight):
+        self.weight = newWeight
+        
+        
 def getEarliestUnvisitedNode(NrNodes, visited):
         for n in range(NrNodes):
             if(not visited[n]):
                 return n
+            
+'''
 def newConnectivity(graph, heightMap, diffThresh = 3.0):   
     regions = []
     visited = [False for i in range(graph.get_NrNodes())]
@@ -108,6 +117,7 @@ def newLiquidMap(graph, liquidMap, diffThresh = 3.0):
         regions.append(region)
         region = []
     return regions
+'''
 '''
 Creates a graph from a 2D array and creates connected regions with a DFS traversal
 Returns: List of lists containing 2D coordinates for any region
@@ -199,41 +209,40 @@ def connectivity(nodes):
 
 def findStartNode(H, W, visited):
         for x in range(W):
-            for z in range(H):
-                if(not visited[x + z*W]):
-                    return x+z*W
+            for y in range(H):
+                if(not visited[x + y*W]):
+                    return x+y*W
     
 def creategraph(nodes):
     H = len(nodes)
     W = len(nodes[0])
     #print(H,W)
     graph = [[] for i in range(W*H)] #graph[pos][0=edgeTo, 1=Weight]
-    for z in range(H):
+    for y in range(H):
         for x in range(W):
             if(x > 0):
-                graph[x+z*W].append([(x-1) + z*W, nodes[z][x-1]-nodes[z][x]])
+                graph[x+y*W].append([(x-1) + y*W, nodes[y][x-1]-nodes[y][x]])
             if(x < W-1):
-                graph[x+z*W].append([(x+1) + z*W, nodes[z][x+1]-nodes[z][x]])
-            if(z > 0):
-                graph[x+z*W].append([x + (z-1)*W, nodes[z-1][x]-nodes[z][x]])
-            if(z < H-1):
-                graph[x+z*W].append([x + (z+1)*W, nodes[z+1][x]-nodes[z][x]])
+                graph[x+y*W].append([(x+1) + y*W, nodes[y][x+1]-nodes[y][x]])
+            if(y > 0):
+                graph[x+y*W].append([x + (y-1)*W, nodes[y-1][x]-nodes[y][x]])
+            if(y < H-1):
+                graph[x+y*W].append([x + (y+1)*W, nodes[y+1][x]-nodes[y][x]])
     return graph
  
 
-def test():
+
+if __name__ == "__main__":
+    import random
     W = 10
     H = 15
     array = [[random.choice((0,1,2,3,4,5,6,7,8,9)) for i in range(W)] for j in range(H)]
     graph = Graph(W,H)
     graph.createOrthogonalGraphFrom2D(array)
-    regions = newConnectivity(graph, array)
+    #regions = newConnectivity(graph, array)
     #print(connectedNodes)
     tot = 0
     for r in regions:
         print(len(r))
         tot += len(r)
     print(tot)
-
-if __name__ == "__main__":
-    test()
