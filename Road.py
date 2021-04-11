@@ -3,7 +3,7 @@ import numpy as np
 import random as Random
 from pygame.math import Vector2 as Vector
 import Graph as Graph
-import queue as Queue
+#import queue as Queue
 import utilityFunctions as uf
 
 class RoadSystem:

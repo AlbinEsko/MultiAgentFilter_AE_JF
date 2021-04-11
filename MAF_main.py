@@ -10,7 +10,7 @@ import utilityFunctions as uf
 import Graph as Graph
 import BlockIDs as Blocks
 from typing import List, Any
-import Road as Road
+#import Road as Road
 from pygame.math import Vector2 as Vector
 
 inputs = (
@@ -22,13 +22,14 @@ def perform(level, box, options):
     print("Performing")
     hgtMap, liquidmap = createHeightMap(level, box)
     print("height map and liquid map made")
+    print(hgtMap[1][4])
     #markRegions(level, box, hgtMap, liquidmap)
     boxOrigo = Vector(box.minx, box.minz)
-    roads = Road.RoadSystem(level,box,hgtMap,liquidmap, boxOrigo)
-    print("creating agents")
-    roads.CreateAgents(15)
-    for r in range(500):
-        roads.UpdateAgents()
+    #roads = Road.RoadSystem(level,box,hgtMap,liquidmap, boxOrigo)
+    #print("creating agents")
+    #roads.CreateAgents(15)
+    # for r in range(500):
+    #     roads.UpdateAgents()
     #for r in roads.roadMap:
     #    print(r)
     
