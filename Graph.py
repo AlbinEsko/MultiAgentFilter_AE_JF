@@ -50,7 +50,9 @@ class Node:
         
     def changeEdgeWeight(self, edgeTo, newWeight):
         self.adjacent[edgeTo] = newWeight
-                
+               
+    def get_weight(self, to):
+        return self.adjacent[to]
     
         
 class DirectedEdge:

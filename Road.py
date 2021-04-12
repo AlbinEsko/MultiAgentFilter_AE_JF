@@ -22,7 +22,7 @@ class RoadSystem:
         self.liquidMap = lqdMap
         self.roadMap = [[0 for x in range(self.width)] for z in range(self.height)]
         self.graph = Graph.Graph(box.width, box.length,hgtMap,lqdMap)
-        self.create8WayEdges(graph)
+        self.create8WayEdges(self.graph)
         self.intersectionGraph.append([])
         self.SetRoadMapTile(self.width/2,self.height/2)
       
@@ -41,10 +41,10 @@ class RoadSystem:
         for p in suggestion:
             self.SetRoadMapTile(p[0],p[1])
             
-    def SetRoadMapTile(self, X, Y):
-        self.roadMap[Y][X] = 99
-        uf.setBlock(self.level, (35,1), int(self.origo.x + X), self.roadGraph, int(self.origo.y + Y ))
-        self.SpreadRoadCoverage(5, X, Y)
+    def SetRoadMapTile(self, x, y):
+        self.roadMap[y][x] = 99
+        uf.setBlock(self.level, (35,1), int(self.origo.x + x), self.graph.getNode(x,y).height, int(self.origo.y + y ))
+        self.SpreadRoadCoverage(5, x, y)
         
     def SpreadRoadCoverage(self, value, X, Y):
         if value == 0:
@@ -82,12 +82,12 @@ class RoadSystem:
             self.SpreadRoadCoverage(value-1,X-1,Y+1)
     
     def create8WayEdges(self, graph):
-        for Y in range(graph.height):
-            for X in range(graph.width):
-                topFree = Y-1 >= 0
-                leftFree = X-1 >= 0
-                botFree = Y+1 < self.roadSystem.height
-                rightFree = X+1 < self.roadSystem.width
+        for y in range(graph.height):
+            for x in range(graph.width):
+                topFree = y-1 >= 0
+                leftFree = x-1 >= 0
+                botFree = y+1 < self.height
+                rightFree = x+1 < self.width
                 if topFree:
                     graph.getNode(x,y).addEdge_xy(x,y-1,graph.width,graph.getNode(x,y-1).height-graph.getNode(x,y).height)
                 if botFree:
@@ -154,7 +154,7 @@ class ExtendorAgent:
     '''Analyze current position for road coverage'''
     def Analyze(self):
         if self.roadSystem.roadMap[int(self.pos.y)][int(self.pos.x)] == 0:
-            self.MakeRoadWithDistance()
+            self.dijkstra()
             
     '''follow roadmap distance to existing road and log every step'''
     def MakeRoadWithDistance(self):
@@ -197,10 +197,20 @@ class ExtendorAgent:
                 if self.roadSystem.roadMap[Y+1][X-1] > value:
                     value, nextX, nextY = self.CheckValue(X-1,Y+1,value)
             path.append([nextX,nextY])
+            self.printRoad(path)
+            
+    def printRoad(self, path):
         while len(path) != 0:
             pos = path.pop()
             placeX = pos[0]
             placeY = pos[1]
+            self.roadSystem.SetRoadMapTile(placeX, placeY)
+            
+    def printRoad_Ind(self, path):
+        while len(path) != 0:
+            pos = path.pop()
+            placeX = pos % self.roadSystem.width
+            placeY = pos / self.roadSystem.width
             self.roadSystem.SetRoadMapTile(placeX, placeY)
         
         
@@ -210,7 +220,7 @@ class ExtendorAgent:
         nextY = Y
         return value, nextX, nextY
       
-    def MakeGoodRoad(self):
+    #def MakeGoodRoad(self):
         #2 different weight values, Height difference and deviation from shortest
         #Bad: takes a long winding road to have no height difference
         #Bad: makes the shortest road extention possible with no regard for height difference
@@ -221,21 +231,36 @@ class ExtendorAgent:
         #weights/costs: 1 for moving horizontaly, +1 per height movement, +1 per terraform
     
     def dijkstra(self):
-        visited = [False for i in range(self.roadSystem.roadGraph.NrNodes())]
+        start = int(self.pos.x + self.pos.y * self.roadSystem.width)
+        previous = [-1 for i in range(self.roadSystem.graph.get_NrNodes())]
+        visited = [False for i in range(self.roadSystem.graph.get_NrNodes())]
         distTo = [sys.maxint for i in range(self.roadSystem.graph.get_NrNodes())]
-        distTo[self.pos.x + self.pos.y * self.roadSystem.width] = 0
+        distTo[start] = 0
         unvisited = [(distTo[n],n) for n in range(self.roadSystem.graph.get_NrNodes())]
         heapq.heapify(unvisited)
         while len(unvisited):
             un = heapq.heappop(unvisited)
-            current = self.graph[un[1]]
-            visited[un[1]] = True
+            currentIndex = un[1]
+            current = self.roadSystem.graph[currentIndex]
+            if current.roadVal == 99:
+                break #stop searching after finding any road
+            visited[currentIndex] = True
             for edge in current.adjacent:
-                if visited[edge.to]:
+                if visited[edge]:
                     continue
-                newDist = distTo[un[1]] + edge.
+                newDist = distTo[currentIndex] + current.get_weight(edge)
+                if newDist < distTo[edge]:
+                    distTo[edge] = newDist
+                    previous[edge] = currentIndex
+        
+        path = []
+        path.append(currentIndex)
+        while path[len(path)-1] != start:
+            path.append(previous[path[len(path)-1]])
             
-    
+        self.printRoad_Ind(path)
+            
+    '''
     def CreateMinSpanTree(self, start):
         enqueued = [False for i in range(self.roadSystem.roadGraph.NrNodes())]
         minSpanTree = [-1 for i in range(self.roadSystem.roadGraph.NrNodes())]
@@ -266,10 +291,11 @@ class ExtendorAgent:
             nodeID = minSpanTree[nodeID]
         path.append(start)
         return path
-        
+        '''
     
     
-    
+def transIndToXY(i, width):
+    return [i % width, i / width]
     
     
     
