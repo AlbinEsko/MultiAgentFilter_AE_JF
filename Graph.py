@@ -37,22 +37,27 @@ class Node:
     def __init__(self, x, y, height, liquid):
         self.x = x
         self.y = y
-        self.adjacent = {}
+        self.adjacent = []
         self.height = height
         self.liquid = liquid
         self.roadVal = 0
         
     def addEdge(self, to, weight = 1):
-        self.adjacent[to] = weight
+        self.adjacent.append(DirectedEdge(to, weight))
       
     def addEdge_xy(self, x, y, width, weight = 1):
-        self.adjacent[x+y*width] = weight
+        self.adjacent.append(DirectedEdge(x+y*width, weight))
         
-    def changeEdgeWeight(self, edgeTo, newWeight):
-        self.adjacent[edgeTo] = newWeight
+    def changeEdgeWeight(self, to, newWeight):
+        for e in self.adjacent:
+            if e.to == to:
+                e.weight = newWeight
                
     def get_weight(self, to):
-        return self.adjacent[to]
+        for e in self.adjacent:
+            if e.to == to:
+                return e.weight
+        return -1
     
         
 class DirectedEdge:
