@@ -243,8 +243,9 @@ class ExtendorAgent:
         visited = [False for i in range(self.roadSystem.graph.get_NrNodes())]
         distTo = [sys.maxint for i in range(self.roadSystem.graph.get_NrNodes())]
         distTo[start] = 0
-        unvisited = [(distTo[n],n) for n in range(self.roadSystem.graph.get_NrNodes())]
-        heapq.heapify(unvisited)
+        unvisited = []
+        heapq.heappush(unvisited, (distTo[start], start))
+        
         while len(unvisited):
             un = heapq.heappop(unvisited)
             print(un)
@@ -256,11 +257,10 @@ class ExtendorAgent:
             for edge in currentNode.adjacent:
                 if visited[edge.to]:
                     continue
-                print(edge.to, edge.weight)
                 newDist = distTo[currentIndex] + edge.weight
                 if newDist < distTo[edge.to]:
                     distTo[edge.to] = newDist
-                    unvisited[edge.to] = (newDist, edge.to)
+                    heapq.heappush(unvisited, (newDist, edge.to))
                     previous[edge.to] = currentIndex
         
         path = []
