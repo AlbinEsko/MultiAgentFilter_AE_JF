@@ -89,26 +89,26 @@ class RoadSystem:
                 botFree = y+1 < self.height
                 rightFree = x+1 < self.width
                 if topFree:
-                    graph.getNode(x,y).addEdge_xy(x,y-1,graph.width,graph.getNode(x,y-1).height-graph.getNode(x,y).height)
+                    graph.getNode(x,y).addEdge_xy(x, y-1, graph.width, 1 + graph.getNode(x,y-1).height-graph.getNode(x,y).height)
                 if botFree:
-                    graph.getNode(x,y).addEdge_xy(x,y+1,graph.width,graph.getNode(x,y+1).height-graph.getNode(x,y).height)
+                    graph.getNode(x,y).addEdge_xy(x, y+1, graph.width, 1 + graph.getNode(x,y+1).height-graph.getNode(x,y).height)
                 if leftFree:
-                    graph.getNode(x,y).addEdge_xy(x-1,y,graph.width,graph.getNode(x-1,y).height-graph.getNode(x,y).height)
+                    graph.getNode(x,y).addEdge_xy(x-1, y, graph.width, 1 + graph.getNode(x-1,y).height-graph.getNode(x,y).height)
                 if rightFree:
-                    graph.getNode(x,y).addEdge_xy(x+1,y,graph.width,graph.getNode(x+1,y).height-graph.getNode(x,y).height)
+                    graph.getNode(x,y).addEdge_xy(x+1, y, graph.width, 1 + graph.getNode(x+1,y).height-graph.getNode(x,y).height)
                 if leftFree and topFree:
-                    graph.getNode(x,y).addEdge_xy(x-1,y-1,graph.width,graph.getNode(x-1,y-1).height-graph.getNode(x,y).height)
+                    graph.getNode(x,y).addEdge_xy(x-1, y-1, graph.width, 1 + graph.getNode(x-1,y-1).height-graph.getNode(x,y).height)
                 if topFree and rightFree:
-                    graph.getNode(x,y).addEdge_xy(x+1,y-1,graph.width,graph.getNode(x+1,y-1).height-graph.getNode(x,y).height)
+                    graph.getNode(x,y).addEdge_xy(x+1, y-1, graph.width, 1 + graph.getNode(x+1,y-1).height-graph.getNode(x,y).height)
                 if botFree and rightFree:
-                    graph.getNode(x,y).addEdge_xy(x+1,y+1,graph.width,graph.getNode(x+1,y+1).height-graph.getNode(x,y).height)
+                    graph.getNode(x,y).addEdge_xy(x+1, y+1, graph.width, 1 + graph.getNode(x+1,y+1).height-graph.getNode(x,y).height)
                 if botFree and leftFree:
-                    graph.getNode(x,y).addEdge_xy(x-1,y+1,graph.width,graph.getNode(x-1,y+1).height-graph.getNode(x,y).height)
+                    graph.getNode(x,y).addEdge_xy(x-1, y+1, graph.width, 1 + graph.getNode(x-1,y+1).height-graph.getNode(x,y).height)
                     
 class ExtendorAgent:
     def __init__(self, roadSystem, startPos):
         self.roadSystem = roadSystem
-        self.speed = 1.0
+        self.speed = 1
         self.pos = Vector(float(startPos.x), float(startPos.y))
         self.blockPos = Vector(0,0)
         self.dir = Vector(1,0)
@@ -160,7 +160,10 @@ class ExtendorAgent:
     def MakeRoadWithDistance(self):
         path = []
         path.append([int(self.pos.x), (int(self.pos.y))])
+        z=0
         while True:
+            print(z)
+            z = z+1
             X = path[len(path)-1][0]
             Y = path[len(path)-1][1]
             if self.roadSystem.roadMap[Y][X] == 99:
@@ -196,7 +199,8 @@ class ExtendorAgent:
             if botFree and leftFree:
                 if self.roadSystem.roadMap[Y+1][X-1] > value:
                     value, nextX, nextY = self.CheckValue(X-1,Y+1,value)
-            path.append([nextX,nextY])
+            print(value, nextX, nextY)
+            path.append([nextX, nextY])
             self.printRoad(path)
             
     def printRoad(self, path):
@@ -229,8 +233,11 @@ class ExtendorAgent:
         #Requirement: never takes a path with a height difference larger than 1
         #improvement: allow terraforming to take shorter roads
         #weights/costs: 1 for moving horizontaly, +1 per height movement, +1 per terraform
-    
+
+        
+
     def dijkstra(self):
+        #creatiing full arrays for the whole area feels wastefull, further research for later
         start = int(self.pos.x + self.pos.y * self.roadSystem.width)
         previous = [-1 for i in range(self.roadSystem.graph.get_NrNodes())]
         visited = [False for i in range(self.roadSystem.graph.get_NrNodes())]
@@ -240,18 +247,21 @@ class ExtendorAgent:
         heapq.heapify(unvisited)
         while len(unvisited):
             un = heapq.heappop(unvisited)
+            print(un)
             currentIndex = un[1]
-            current = self.roadSystem.graph[currentIndex]
-            if current.roadVal == 99:
+            currentNode = self.roadSystem.graph[currentIndex]
+            if currentNode.roadVal == 99:
                 break #stop searching after finding any road
             visited[currentIndex] = True
-            for edge in current.adjacent:
-                if visited[edge]:
+            for edge in currentNode.adjacent:
+                if visited[edge.to]:
                     continue
-                newDist = distTo[currentIndex] + current.get_weight(edge)
-                if newDist < distTo[edge]:
-                    distTo[edge] = newDist
-                    previous[edge] = currentIndex
+                print(edge.to, edge.weight)
+                newDist = distTo[currentIndex] + edge.weight
+                if newDist < distTo[edge.to]:
+                    distTo[edge.to] = newDist
+                    unvisited[edge.to] = (newDist, edge.to)
+                    previous[edge.to] = currentIndex
         
         path = []
         path.append(currentIndex)
