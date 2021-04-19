@@ -76,11 +76,15 @@ class Module():
         if direction == Direction.NONE or direction == Direction.NORTH:
             dist = abs(self.yard.origin.z - self.box.origin.z)
             if dist != 0:
+                #perpendicular to direction
                 for perpendicular in range(self.box.size.x):
                     for parallel in range(dist):
-                        if height != self.building.heightmap[offset.z + perpendicular][offset.x - parallel]:
+                        z = (self.box.origin.z-1) - parallel
+                        x = self.box.origin.x + perpendicular
+                        if height != self.building.heightmap[z][x] and dist < parallel:
                             dist = parallel
                             break
+
 
             output.append(dist)
         if direction == Direction.NONE or direction == Direction.EAST:
@@ -88,7 +92,9 @@ class Module():
             if dist != 0:
                 for perpendicular in range(self.box.size.z):
                     for parallel in range(dist):
-                        if height != self.building.heightmap[offset.z + perpendicular][offset.x + parallel]:
+                        z= self.origin.z + perpendicular
+                        x= (self.box.origin.x + self.box.size.x) + parallel
+                        if height != self.building.heightmap[z][x] and dist < parallel:
                             dist = parallel
                             break
 
@@ -98,7 +104,9 @@ class Module():
             if dist != 0:
                 for perpendicular in range(self.box.size.x):
                     for parallel in range(dist):
-                        if height != self.building.heightmap[offset.z + perpendicular][offset.x + perpendicular]:
+                        z =
+                        x = self.box.origin.x + perpendicular
+                        if height != self.building.heightmap[z][x] and dist < parallel:
                             dist = parallel
                             break
 

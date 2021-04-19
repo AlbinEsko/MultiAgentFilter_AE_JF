@@ -3,7 +3,6 @@ import numpy as np
 import random as Random
 from pygame.math import Vector2 as Vector
 import Graph as Graph
-#import queue as Queue
 import utilityFunctions as uf
 
 class RoadSystem:
@@ -186,36 +185,36 @@ class ExtendorAgent:
         #weighted BFS where higher weights is more attractive
         #untill it reaches a weight "roadWeight"
         
-    def CreateMinSpanTree(self, start):
-        enqueued = [False for i in range(self.roadSystem.roadGraph.NrNodes())]
-        minSpanTree = [-1 for i in range(self.roadSystem.roadGraph.NrNodes())]
-        queue = Queue.Queue()
-        queue.put(start)
-        enqueued[start] = True
-        while(len(queue) > 0):
-            activeNode = queue.get()
-            if(self.roadSystem.roadGraph[activeNode].weight == 99):
-                break
-            for e in self.roadSystem.roadGraph[activeNode]:
-                toIndex = e
-                if(not enqueued[toIndex]):
-                    enqueued[toIndex] = True
-                    minSpanTree[toIndex] = activeNode
-                    queue.put(toIndex)
-        return (activeNode, minSpanTree)
+    # def CreateMinSpanTree(self, start):
+    #     enqueued = [False for i in range(self.roadSystem.roadGraph.NrNodes())]
+    #     minSpanTree = [-1 for i in range(self.roadSystem.roadGraph.NrNodes())]
+    #     queue = Queue.Queue()
+    #     queue.put(start)
+    #     enqueued[start] = True
+    #     while(len(queue) > 0):
+    #         activeNode = queue.get()
+    #         if(self.roadSystem.roadGraph[activeNode].weight == 99):
+    #             break
+    #         for e in self.roadSystem.roadGraph[activeNode]:
+    #             toIndex = e
+    #             if(not enqueued[toIndex]):
+    #                 enqueued[toIndex] = True
+    #                 minSpanTree[toIndex] = activeNode
+    #                 queue.put(toIndex)
+    #     return (activeNode, minSpanTree)
     
-    def BFS(self, start):
-        
-        path = []
-        minSpanTreeData = CreateMinSpanTree(start)
-        minSpanTree = minSpanTreeData[1]
-        goal = minSpanTreeData[0]
-        nodeID = goal
-        while(nodeID != start):
-            path.append(nodeID)
-            nodeID = minSpanTree[nodeID]
-        path.append(start)
-        return path
+    # def BFS(self, start):
+    #
+    #     #path = []
+    #     #minSpanTreeData = CreateMinSpanTree(start)
+    #     minSpanTree = minSpanTreeData[1]
+    #     goal = minSpanTreeData[0]
+    #     nodeID = goal
+    #     while(nodeID != start):
+    #         path.append(nodeID)
+    #         nodeID = minSpanTree[nodeID]
+    #     path.append(start)
+    #     return path
         
     
     

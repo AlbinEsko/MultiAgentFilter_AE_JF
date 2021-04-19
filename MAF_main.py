@@ -23,6 +23,7 @@ def perform(level, box, options):
     hgtMap, liquidmap = createHeightMap(level, box)
     print("height map and liquid map made")
     print(hgtMap[1][4])
+    print(box.origin)
     #markRegions(level, box, hgtMap, liquidmap)
     boxOrigo = Vector(box.minx, box.minz)
     #roads = Road.RoadSystem(level,box,hgtMap,liquidmap, boxOrigo)
