@@ -7,7 +7,7 @@ class Graph:
         self.height = h
         for y in range(h):
             for x in range(w):
-                self.graph.append(Node(x,y,hgtMap[y][x], lqdMap[y][x]))
+                self.graph.append(Node(x+y*w, x, y, hgtMap[y][x], lqdMap[y][x]))
         
     def __getitem__(self,index):#overloaded operator[]
         return self.graph[index]
@@ -18,23 +18,24 @@ class Graph:
     def get_NrNodes(self):
         return len(self.graph)
         
-    
+    '''
     def createOrthogonalGraphFrom2D(self, data):
         for y in range(self.height):
             for x in range(self.width):
                 if(y > 0):#Up
-                    self.graph[x+y*self.width].append(DirectedEdge(x + (y-1) * self.width, data[y-1][x]-data[y][x]))
+                    self.graph[x+y*self.width].append(DirectedEdge(x + (y-1) * self.width, x + y * self.width, data[y-1][x]-data[y][x]))
                 if(y < self.height-1):#Down
-                    self.graph[x+y*self.width].append(DirectedEdge(x + (y+1) * self.width, data[y+1][x]-data[y][x]))
+                    self.graph[x+y*self.width].append(DirectedEdge(x + (y+1) * self.width, x + y * self.width, data[y+1][x]-data[y][x]))
                 if(x > 0):#Left
-                    self.graph[x+y*self.width].append(DirectedEdge((x-1) + y * self.width, data[y][x-1]-data[y][x]))
+                    self.graph[x+y*self.width].append(DirectedEdge((x-1) + y * self.width, x + y * self.width, data[y][x-1]-data[y][x]))
                 if(x < self.width-1):#Right
-                    self.graph[x+y*self.width].append(DirectedEdge((x+1) + y * self.width, data[y][x+1]-data[y][x]))
+                    self.graph[x+y*self.width].append(DirectedEdge((x+1) + y * self.width, x + y * self.width, data[y][x+1]-data[y][x]))
         return self.graph
-
+'''
 
 class Node:
-    def __init__(self, x, y, height, liquid):
+    def __init__(self, index, x, y, height, liquid):
+        self.index = index
         self.x = x
         self.y = y
         self.adjacent = []
@@ -43,10 +44,10 @@ class Node:
         self.roadVal = 0
         
     def addEdge(self, to, weight = 1):
-        self.adjacent.append(DirectedEdge(to, weight))
+        self.adjacent.append(DirectedEdge(to, self.index, weight))
       
     def addEdge_xy(self, x, y, width, weight = 1):
-        self.adjacent.append(DirectedEdge(x+y*width, weight))
+        self.adjacent.append(DirectedEdge(x+y*width, self.index, weight))
         
     def changeEdgeWeight(self, to, newWeight):
         for e in self.adjacent:
@@ -61,8 +62,9 @@ class Node:
     
         
 class DirectedEdge:
-    def __init__(self, to, weight):
+    def __init__(self, to, frm, weight):
         self.to = to
+        self.frm = frm
         self.weight = weight
 
     def changeWeight(self, newWeight):
@@ -244,12 +246,13 @@ if __name__ == "__main__":
     W = 10
     H = 15
     array = [[random.choice((0,1,2,3,4,5,6,7,8,9)) for i in range(W)] for j in range(H)]
-    graph = Graph(W,H)
-    graph.createOrthogonalGraphFrom2D(array)
+    graph = Graph(W, H, array, array)
+    print('created')
+    #graph.createOrthogonalGraphFrom2D(array)
     #regions = newConnectivity(graph, array)
     #print(connectedNodes)
-    tot = 0
-    for r in regions:
-        print(len(r))
-        tot += len(r)
-    print(tot)
+    #tot = 0
+    #for r in regions:
+        #print(len(r))
+        #tot += len(r)
+    #print(tot)
