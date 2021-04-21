@@ -89,21 +89,21 @@ class RoadSystem:
                 botFree = y+1 < self.height
                 rightFree = x+1 < self.width
                 if topFree:
-                    graph.addEdge_xy(x, y, x, y-1, 1 + graph.getNode(x,y-1).height-graph.getNode(x,y).height)
+                    graph.createEdge_xy(x, y, x, y-1, 1 + abs(graph.getNode(x,y-1).height-graph.getNode(x,y).height))
                 if botFree:
-                    graph.addEdge_xy(x, y, x, y+1, 1 + graph.getNode(x,y+1).height-graph.getNode(x,y).height)
+                    graph.createEdge_xy(x, y, x, y+1, 1 + abs(graph.getNode(x,y+1).height-graph.getNode(x,y).height))
                 if leftFree:
-                    graph.addEdge_xy(x, y, x-1, y, 1 + graph.getNode(x-1,y).height-graph.getNode(x,y).height)
+                    graph.createEdge_xy(x, y, x-1, y, 1 + abs(graph.getNode(x-1,y).height-graph.getNode(x,y).height))
                 if rightFree:
-                    graph.addEdge_xy(x, y, x+1, y, 1 + graph.getNode(x+1,y).height-graph.getNode(x,y).height)
+                    graph.createEdge_xy(x, y, x+1, y, 1 + abs(graph.getNode(x+1,y).height-graph.getNode(x,y).height))
                 if leftFree and topFree:
-                    graph.addEdge_xy(x, y, x-1, y-1, 1 + graph.getNode(x-1,y-1).height-graph.getNode(x,y).height)
+                    graph.createEdge_xy(x, y, x-1, y-1, 1 + abs(graph.getNode(x-1,y-1).height-graph.getNode(x,y).height))
                 if topFree and rightFree:
-                    graph.addEdge_xy(x, y, x+1, y-1, 1 + graph.getNode(x+1,y-1).height-graph.getNode(x,y).height)
+                    graph.createEdge_xy(x, y, x+1, y-1, 1 + abs(graph.getNode(x+1,y-1).height-graph.getNode(x,y).height))
                 if botFree and rightFree:
-                    graph.addEdge_xy(x, y, x+1, y+1, 1 + graph.getNode(x+1,y+1).height-graph.getNode(x,y).height)
+                    graph.createEdge_xy(x, y, x+1, y+1, 1 + abs(graph.getNode(x+1,y+1).height-graph.getNode(x,y).height))
                 if botFree and leftFree:
-                    graph.addEdge_xy(x, y, x-1, y+1, 1 + graph.getNode(x-1,y+1).height-graph.getNode(x,y).height)
+                    graph.createEdge_xy(x, y, x-1, y+1, 1 + abs(graph.getNode(x-1,y+1).height-graph.getNode(x,y).height))
                     
 class ExtendorAgent:
     def __init__(self, roadSystem, startPos):
@@ -241,8 +241,8 @@ class ExtendorAgent:
         start = int(self.pos.x + self.pos.y * self.roadSystem.width)
         d = Dijkstra.dijkstras(self.roadSystem.graph, start)
         path = d.pathTo(self.roadSystem.width/2 + self.roadSystem.height/2 * self.roadSystem.width)
-        path = edgesToXY(path)
-        self.roadSystem.CreateRoad(path)
+        path = edgesToXY(path, self.roadSystem.width)
+        self.printRoad(path)
             
     '''
     def CreateMinSpanTree(self, start):
