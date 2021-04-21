@@ -18,20 +18,19 @@ class Graph:
     def get_NrNodes(self):
         return len(self.graph)
         
-    '''
+    
     def createOrthogonalGraphFrom2D(self, data):
         for y in range(self.height):
             for x in range(self.width):
                 if(y > 0):#Up
-                    self.graph[x+y*self.width].append(DirectedEdge(x + (y-1) * self.width, x + y * self.width, data[y-1][x]-data[y][x]))
+                    self.getNode(x,y).addEdge_xy(x,y+1,self.width)#, data[y-1][x]-data[y][x])
                 if(y < self.height-1):#Down
-                    self.graph[x+y*self.width].append(DirectedEdge(x + (y+1) * self.width, x + y * self.width, data[y+1][x]-data[y][x]))
+                    self.getNode(x,y).addEdge_xy(x,y-1,self.width)#, data[y+1][x]-data[y][x])
                 if(x > 0):#Left
-                    self.graph[x+y*self.width].append(DirectedEdge((x-1) + y * self.width, x + y * self.width, data[y][x-1]-data[y][x]))
+                    self.getNode(x,y).addEdge_xy(x-1,y,self.width)#, data[y][x-1]-data[y][x])
                 if(x < self.width-1):#Right
-                    self.graph[x+y*self.width].append(DirectedEdge((x+1) + y * self.width, x + y * self.width, data[y][x+1]-data[y][x]))
-        return self.graph
-'''
+                    self.getNode(x,y).addEdge_xy(x+1,y,self.width)#, data[y][x+1]-data[y][x])
+
 
 class Node:
     def __init__(self, index, x, y, height, liquid):

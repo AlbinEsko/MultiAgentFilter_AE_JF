@@ -5,16 +5,18 @@ import Graph
 import BinaryHeap
 class dijkstras:
     def __init__(self, graph, start):
-        self.edgeTo = np.empty(graph.get_NrNodes(), Graph.DirectedEdge)
-        self.distTo = np.full(graph.get_NrNodes(), sys.maxint)
-        self.pq = BinaryHeap.IndexMinPQ(graph.get_NrNodes(), float)
+        self.edgeTo = [None for i in range(graph.get_NrNodes()+1)] #np.empty(graph.get_NrNodes(), None)
+        self.distTo = np.full(graph.get_NrNodes()+1, sys.maxint)
+        self.pq = BinaryHeap.IndexMinPQ(graph.get_NrNodes()+1, float)
         self.distTo[start] = 0
+        self.pq.insert(start, 0.0)
         while not self.pq.isEmpty():
             self.relax(graph, self.pq.delMin())
             
     def relax(self, graph, v):
         for edge in graph[v].adjacent:
             w = edge.to
+            print(edge.frm, w)
             if self.distTo[w] > self.distTo[v] + edge.weight:
                 self.distTo[w] = self.distTo[v] + edge.weight
                 self.edgeTo[w] = edge
@@ -45,8 +47,9 @@ if __name__ == "__main__":
     H = 15
     array = [[random.choice((0,1,2,3,4,5,6,7,8,9)) for i in range(W)] for j in range(H)]
     graph = Graph.Graph(W, H, array, array)
+    graph.createOrthogonalGraphFrom2D(array)
     print('created')
     d = dijkstras(graph,0)
     path = d.pathTo(H*W-1)
-    for v in path:
-        print(v.x, v.y)
+    for e in path:
+        print(e)
