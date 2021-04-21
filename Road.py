@@ -5,7 +5,7 @@ import numpy as np
 import random as Random
 from pygame.math import Vector2 as Vector
 import Graph as Graph
-import queue
+import Dijkstra
 import utilityFunctions as uf
 
 class RoadSystem:
@@ -239,36 +239,10 @@ class ExtendorAgent:
     def dijkstra(self):
         #creatiing full arrays for the whole area feels wastefull, further research for later
         start = int(self.pos.x + self.pos.y * self.roadSystem.width)
-        previous = [-1 for i in range(self.roadSystem.graph.get_NrNodes())]
-        visited = [False for i in range(self.roadSystem.graph.get_NrNodes())]
-        distTo = [sys.maxint for i in range(self.roadSystem.graph.get_NrNodes())]
-        distTo[start] = 0
-        unvisited = []
-        heapq.heappush(unvisited, (distTo[start], start))
-        
-        while len(unvisited):
-            un = heapq.heappop(unvisited)
-            print(un)
-            currentIndex = un[1]
-            currentNode = self.roadSystem.graph[currentIndex]
-            if currentNode.roadVal == 99:
-                break #stop searching after finding any road
-            visited[currentIndex] = True
-            for edge in currentNode.adjacent:
-                if visited[edge.to]:
-                    continue
-                newDist = distTo[currentIndex] + edge.weight
-                if newDist < distTo[edge.to]:
-                    distTo[edge.to] = newDist
-                    heapq.heappush(unvisited, (newDist, edge.to))
-                    previous[edge.to] = currentIndex
-        
-        path = []
-        path.append(currentIndex)
-        while path[len(path)-1] != start:
-            path.append(previous[path[len(path)-1]])
-            
-        self.printRoad_Ind(path)
+        d = Dijkstra.dijkstras(self.roadSystem.graph, start)
+        path = d.pathTo(self.roadSystem.width/2 + self.roadSystem.height/2 * self.roadSystem.width)
+        path = edgesToXY(path)
+        self.roadSystem.CreateRoad(path)
             
     '''
     def CreateMinSpanTree(self, start):
@@ -302,7 +276,11 @@ class ExtendorAgent:
         path.append(start)
         return path
         '''
-    
+def edgesToXY(path, width):
+    xy_path = []
+    for e in path:
+        xy_path.append((e.to%width, e.to/width))
+    return xy_path
     
 def transIndToXY(i, width):
     return [i % width, i / width]

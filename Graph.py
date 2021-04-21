@@ -36,17 +36,17 @@ class Graph:
         self.graph[frm].createEdge_xy(toX, toY, self.width, weight)
         self.nrEdges = self.nrEdges + 1
     
-    def createOrthogonalGraphFrom2D(self, data):
+    def createOrthogonalGraphFrom2D(self):
         for y in range(self.height):
             for x in range(self.width):
                 if(y > 0):#Up
-                    self.getNode(x,y).addEdge_xy(x,y+1,self.width)#, data[y-1][x]-data[y][x])
+                    self.getNode(x,y).createEdge_xy(x,y-1,self.width, abs(self.getNode(x,y-1).height - self.getNode(x,y).height))
                 if(y < self.height-1):#Down
-                    self.getNode(x,y).addEdge_xy(x,y-1,self.width)#, data[y+1][x]-data[y][x])
+                    self.getNode(x,y).createEdge_xy(x,y+1,self.width, abs(self.getNode(x,y+1).height - self.getNode(x,y).height))
                 if(x > 0):#Left
-                    self.getNode(x,y).addEdge_xy(x-1,y,self.width)#, data[y][x-1]-data[y][x])
+                    self.getNode(x,y).createEdge_xy(x-1,y,self.width, abs(self.getNode(x-1,y).height - self.getNode(x,y).height))
                 if(x < self.width-1):#Right
-                    self.getNode(x,y).addEdge_xy(x+1,y,self.width)#, data[y][x+1]-data[y][x])
+                    self.getNode(x,y).createEdge_xy(x+1,y,self.width, abs(self.getNode(x+1,y).height - self.getNode(x,y).height))
 
 
 class Node:

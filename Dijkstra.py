@@ -14,9 +14,9 @@ class dijkstras:
             self.relax(graph, self.pq.delMin())
             
     def relax(self, graph, v):
-        for edge in graph[v].adjacent:
+        edgeList = graph[v].adjacent
+        for edge in edgeList:
             w = edge.to
-            print(edge.frm, w)
             if self.distTo[w] > self.distTo[v] + edge.weight:
                 self.distTo[w] = self.distTo[v] + edge.weight
                 self.edgeTo[w] = edge
@@ -43,13 +43,17 @@ class dijkstras:
     
 if __name__ == "__main__":
     import random
+    print("test")
     W = 10
-    H = 15
-    array = [[random.choice((0,1,2,3,4,5,6,7,8,9)) for i in range(W)] for j in range(H)]
+    H = 10
+    array = [[random.choice([0,1,2,3,4,5,6,7,8,9]) for i in range(W)] for j in range(H)]
     graph = Graph.Graph(W, H, array, array)
-    graph.createOrthogonalGraphFrom2D(array)
+    graph.createOrthogonalGraphFrom2D()
     print('created')
     d = dijkstras(graph,0)
     path = d.pathTo(H*W-1)
     for e in path:
-        print(e)
+        to = e.to
+        print(to%W, to/W)
+        
+'''random.choice((0,1,2,3,4,5,6,7,8,9))'''

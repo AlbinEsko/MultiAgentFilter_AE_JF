@@ -156,12 +156,11 @@ class IndexMinPQ:
             k = j
             
     def exch(self, i, j):
-        tempI = self.pq[i]
-        tempN = self.qp[i]
+        temp = self.pq[i]
         self.pq[i] = self.pq[j]
-        self.qp[i] = self.qp[j]
-        self.pq[j] = tempI
-        self.qp[j] = tempN
+        self.pq[j] = temp
+        self.qp[self.pq[i]] = i
+        self.qp[self.pq[j]] = j
         
     def greater(self, i, j):
         return self.keys[self.pq[i]] > self.keys[self.pq[j]]
