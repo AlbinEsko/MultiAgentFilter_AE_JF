@@ -89,21 +89,21 @@ class RoadSystem:
                 botFree = y+1 < self.height
                 rightFree = x+1 < self.width
                 if topFree:
-                    graph.getNode(x,y).addEdge_xy(x, y-1, graph.width, 1 + graph.getNode(x,y-1).height-graph.getNode(x,y).height)
+                    graph.addEdge_xy(x, y, x, y-1, 1 + graph.getNode(x,y-1).height-graph.getNode(x,y).height)
                 if botFree:
-                    graph.getNode(x,y).addEdge_xy(x, y+1, graph.width, 1 + graph.getNode(x,y+1).height-graph.getNode(x,y).height)
+                    graph.addEdge_xy(x, y, x, y+1, 1 + graph.getNode(x,y+1).height-graph.getNode(x,y).height)
                 if leftFree:
-                    graph.getNode(x,y).addEdge_xy(x-1, y, graph.width, 1 + graph.getNode(x-1,y).height-graph.getNode(x,y).height)
+                    graph.addEdge_xy(x, y, x-1, y, 1 + graph.getNode(x-1,y).height-graph.getNode(x,y).height)
                 if rightFree:
-                    graph.getNode(x,y).addEdge_xy(x+1, y, graph.width, 1 + graph.getNode(x+1,y).height-graph.getNode(x,y).height)
+                    graph.addEdge_xy(x, y, x+1, y, 1 + graph.getNode(x+1,y).height-graph.getNode(x,y).height)
                 if leftFree and topFree:
-                    graph.getNode(x,y).addEdge_xy(x-1, y-1, graph.width, 1 + graph.getNode(x-1,y-1).height-graph.getNode(x,y).height)
+                    graph.addEdge_xy(x, y, x-1, y-1, 1 + graph.getNode(x-1,y-1).height-graph.getNode(x,y).height)
                 if topFree and rightFree:
-                    graph.getNode(x,y).addEdge_xy(x+1, y-1, graph.width, 1 + graph.getNode(x+1,y-1).height-graph.getNode(x,y).height)
+                    graph.addEdge_xy(x, y, x+1, y-1, 1 + graph.getNode(x+1,y-1).height-graph.getNode(x,y).height)
                 if botFree and rightFree:
-                    graph.getNode(x,y).addEdge_xy(x+1, y+1, graph.width, 1 + graph.getNode(x+1,y+1).height-graph.getNode(x,y).height)
+                    graph.addEdge_xy(x, y, x+1, y+1, 1 + graph.getNode(x+1,y+1).height-graph.getNode(x,y).height)
                 if botFree and leftFree:
-                    graph.getNode(x,y).addEdge_xy(x-1, y+1, graph.width, 1 + graph.getNode(x-1,y+1).height-graph.getNode(x,y).height)
+                    graph.addEdge_xy(x, y, x-1, y+1, 1 + graph.getNode(x-1,y+1).height-graph.getNode(x,y).height)
                     
 class ExtendorAgent:
     def __init__(self, roadSystem, startPos):

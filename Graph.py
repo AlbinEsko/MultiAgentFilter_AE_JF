@@ -2,6 +2,8 @@
 
 class Graph:
     def __init__(self, w, h, hgtMap, lqdMap):
+        self.nrEdges = 0
+        self.nrNodes = w * h
         self.graph = []
         self.width = w
         self.height = h
@@ -16,8 +18,23 @@ class Graph:
         return self.graph[x+y*self.width]
     
     def get_NrNodes(self):
-        return len(self.graph)
+        return self.nrNodes
         
+    def get_NrEdges(self):
+        return self.nrEdges
+    
+    def addEdge(self, edge):
+        self.graph[edge.frm].addEdge(edge)
+        self.nrEdges = self.nrEdges + 1
+    
+    def createEdge(self, frm, to, weight = 1):
+        self.graph[frm].createEdge(to, weight)
+        self.nrEdges = self.nrEdges + 1
+      
+    def createEdge_xy(self, frmX, frmY, toX, toY, weight = 1):
+        frm = frmX + frmY * self.width
+        self.graph[frm].createEdge_xy(toX, toY, self.width, weight)
+        self.nrEdges = self.nrEdges + 1
     
     def createOrthogonalGraphFrom2D(self, data):
         for y in range(self.height):
@@ -42,10 +59,13 @@ class Node:
         self.liquid = liquid
         self.roadVal = 0
         
-    def addEdge(self, to, weight = 1):
+    def addEdge(self, edge):
+        self.adjacent.append(edge)
+    
+    def createEdge(self, to, weight = 1):
         self.adjacent.append(DirectedEdge(to, self.index, weight))
       
-    def addEdge_xy(self, x, y, width, weight = 1):
+    def createEdge_xy(self, x, y, width, weight = 1):
         self.adjacent.append(DirectedEdge(x+y*width, self.index, weight))
         
     def changeEdgeWeight(self, to, newWeight):
