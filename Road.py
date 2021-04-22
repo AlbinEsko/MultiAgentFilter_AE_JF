@@ -20,7 +20,6 @@ class RoadSystem:
         self.height = box.length
         self.heightMap = hgtMap
         self.liquidMap = lqdMap
-        self.roadMap = [[0 for x in range(self.width)] for z in range(self.height)]
         self.graph = Graph.Graph(box.width, box.length,hgtMap,lqdMap)
         self.create8WayEdges(self.graph)
         self.intersectionGraph.append([])
@@ -42,7 +41,7 @@ class RoadSystem:
             self.SetRoadMapTile(p[0],p[1])
             
     def SetRoadMapTile(self, x, y):
-        self.roadMap[y][x] = 99
+        self.graph.getNode(x,y).roadVal = 99
         uf.setBlock(self.level, (35,1), int(self.origo.x + x), self.graph.getNode(x,y).height, int(self.origo.y + y ))
         self.SpreadRoadCoverage(5, x, y)
         
@@ -56,29 +55,29 @@ class RoadSystem:
         leftFree = X-1 >= 0
         botFree = Y+1 < self.height
         rightFree = X+1 < self.width
-        if leftFree:
-            self.roadMap[Y][X-1] = max(self.roadMap[Y][X-1], value)
-            self.SpreadRoadCoverage(value-1,X-1,Y)
-        if leftFree and topFree:
-            self.roadMap[Y-1][X-1] = max(self.roadMap[Y-1][X-1], value)
-            self.SpreadRoadCoverage(value-1,X-1,Y-1)
         if topFree:
-            self.roadMap[Y-1][X] = max(self.roadMap[Y-1][X], value)
+            self.graph.getNode(X,Y-1).roadVal = max(self.graph.getNode(X,Y-1).roadVal, value)
             self.SpreadRoadCoverage(value-1,X,Y-1)
-        if topFree and rightFree:
-            self.roadMap[Y-1][X+1] = max(self.roadMap[Y-1][X+1], value)
-            self.SpreadRoadCoverage(value-1,X+1,Y-1)
-        if rightFree:
-            self.roadMap[Y][X+1] = max(self.roadMap[Y][X+1], value)
-            self.SpreadRoadCoverage(value-1,X+1, Y)
-        if botFree and rightFree:
-            self.roadMap[Y+1][X+1] = max(self.roadMap[Y+1][X+1], value)
-            self.SpreadRoadCoverage(value-1,X+1,Y+1)
         if botFree:
-            self.roadMap[Y+1][X] = max(self.roadMap[Y+1][X], value)
+            self.graph.getNode(X,Y+1).roadVal = max(self.graph.getNode(X,Y+1).roadVal, value)
             self.SpreadRoadCoverage(value-1,X, Y+1)
+        if leftFree:
+            self.graph.getNode(X-1,Y).roadVal = max(self.graph.getNode(X-1,Y).roadVal, value)
+            self.SpreadRoadCoverage(value-1,X-1,Y)
+        if rightFree:
+            self.graph.getNode(X+1,Y).roadVal = max(self.graph.getNode(X+1,Y).roadVal, value)
+            self.SpreadRoadCoverage(value-1,X+1, Y)
+        if leftFree and topFree:
+            self.graph.getNode(X-1,Y-1).roadVal = max(self.graph.getNode(X-1,Y-1).roadVal, value)
+            self.SpreadRoadCoverage(value-1,X-1,Y-1)
+        if topFree and rightFree:
+            self.graph.getNode(X+1,Y-1).roadVal = max(self.graph.getNode(X+1,Y-1).roadVal, value)
+            self.SpreadRoadCoverage(value-1,X+1,Y-1)
+        if botFree and rightFree:
+            self.graph.getNode(X+1,Y+1).roadVal = max(self.graph.getNode(X+1,Y+1).roadVal, value)
+            self.SpreadRoadCoverage(value-1,X+1,Y+1)
         if botFree and leftFree:
-            self.roadMap[Y+1][X-1] = max(self.roadMap[Y+1][X-1], value)
+            self.graph.getNode(X-1,Y+1).roadVal = max(self.graph.getNode(X-1,Y+1).roadVal, value)
             self.SpreadRoadCoverage(value-1,X-1,Y+1)
     
     def create8WayEdges(self, graph):
@@ -153,7 +152,7 @@ class ExtendorAgent:
     
     '''Analyze current position for road coverage'''
     def Analyze(self):
-        if self.roadSystem.roadMap[int(self.pos.y)][int(self.pos.x)] == 0:
+        if self.roadSystem.graph.getNode(int(self.pos.x),int(self.pos.y)).roadVal == 0:
             self.dijkstra()
             
     '''follow roadmap distance to existing road and log every step'''
@@ -239,8 +238,11 @@ class ExtendorAgent:
     def dijkstra(self):
         #creatiing full arrays for the whole area feels wastefull, further research for later
         start = int(self.pos.x + self.pos.y * self.roadSystem.width)
+        if start >= self.roadSystem.graph.nrNodes:
+            raise Exception("agent out of bounds")
         d = Dijkstra.dijkstras(self.roadSystem.graph, start)
-        path = d.pathTo(self.roadSystem.width/2 + self.roadSystem.height/2 * self.roadSystem.width)
+        to = d.buildToRoadMinSpanTree(self.roadSystem.graph)
+        path = d.pathTo(to)
         path = edgesToXY(path, self.roadSystem.width)
         self.printRoad(path)
             
