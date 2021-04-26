@@ -34,11 +34,15 @@ class RoadSystem:
             a.Act()
         
     def Analyze(self, suggestion):
+        if(suggestion.totalWeight > 10): #some value dependent on the expeced lenth of a path
+            return
+        if(suggestion.largestDiff > 3):
+            return
         self.CreateRoad(suggestion)
         
     def CreateRoad(self, suggestion):
-        for p in suggestion:
-            self.SetRoadMapTile(p[0],p[1])
+        for tile in suggestion.roadTiles:
+            self.SetRoadMapTile(tile[0],tile[1])
             
     def SetRoadMapTile(self, x, y):
         self.graph.getNode(x,y).roadVal = 99
@@ -88,21 +92,29 @@ class RoadSystem:
                 leftFree = x-1 >= 0
                 rightFree = x+1 < self.width
                 if topFree:
-                    graph.createEdge_xy(x, y, x, y+1, 1 + abs(graph.getNode(x,y+1).height-graph.getNode(x,y).height))
+                    if graph.getNode(x,y+1).liquid == 0:
+                        graph.createEdge_xy(x, y, x, y+1, 1 + abs(graph.getNode(x,y+1).height-graph.getNode(x,y).height))
                 if botFree:
-                    graph.createEdge_xy(x, y, x, y-1, 1 + abs(graph.getNode(x,y-1).height-graph.getNode(x,y).height))
+                    if graph.getNode(x,y-1).liquid == 0:
+                        graph.createEdge_xy(x, y, x, y-1, 1 + abs(graph.getNode(x,y-1).height-graph.getNode(x,y).height))
                 if leftFree:
-                    graph.createEdge_xy(x, y, x-1, y, 1 + abs(graph.getNode(x-1,y).height-graph.getNode(x,y).height))
+                    if graph.getNode(x-1,y).liquid == 0:
+                        graph.createEdge_xy(x, y, x-1, y, 1 + abs(graph.getNode(x-1,y).height-graph.getNode(x,y).height))
                 if rightFree:
-                    graph.createEdge_xy(x, y, x+1, y, 1 + abs(graph.getNode(x+1,y).height-graph.getNode(x,y).height))
+                    if graph.getNode(x+1,y).liquid == 0:
+                        graph.createEdge_xy(x, y, x+1, y, 1 + abs(graph.getNode(x+1,y).height-graph.getNode(x,y).height))
                 if leftFree and topFree:
-                    graph.createEdge_xy(x, y, x-1, y+1, 1 + abs(graph.getNode(x-1,y+1).height-graph.getNode(x,y).height))
+                    if graph.getNode(x-1,y+1).liquid == 0:
+                        graph.createEdge_xy(x, y, x-1, y+1, 1 + abs(graph.getNode(x-1,y+1).height-graph.getNode(x,y).height))
                 if topFree and rightFree:
-                    graph.createEdge_xy(x, y, x+1, y+1, 1 + abs(graph.getNode(x+1,y+1).height-graph.getNode(x,y).height))
+                    if graph.getNode(x+1,y+1).liquid == 0:
+                        graph.createEdge_xy(x, y, x+1, y+1, 1 + abs(graph.getNode(x+1,y+1).height-graph.getNode(x,y).height))
                 if botFree and rightFree:
-                    graph.createEdge_xy(x, y, x+1, y-1, 1 + abs(graph.getNode(x+1,y-1).height-graph.getNode(x,y).height))
+                    if graph.getNode(x+1,y-1).liquid == 0:
+                        graph.createEdge_xy(x, y, x+1, y-1, 1 + abs(graph.getNode(x+1,y-1).height-graph.getNode(x,y).height))
                 if botFree and leftFree:
-                    graph.createEdge_xy(x, y, x-1, y-1, 1 + abs(graph.getNode(x-1,y-1).height-graph.getNode(x,y).height))
+                    if graph.getNode(x-1,y-1).liquid == 0:
+                        graph.createEdge_xy(x, y, x-1, y-1, 1 + abs(graph.getNode(x-1,y-1).height-graph.getNode(x,y).height))
                     
 class ExtendorAgent:
     def __init__(self, roadSystem, startPos):
@@ -242,12 +254,16 @@ class ExtendorAgent:
             raise Exception("agent out of bounds at ", start, self.pos, int(self.pos.x), int(self.pos.y), self.roadSystem.width)
         d = Dijkstra.dijkstras(self.roadSystem.graph, start)
         to = d.buildToRoadMinSpanTree(self.roadSystem.graph)
+        if to == -1:
+            print ("road construction aborted")
+            return
         data = d.pathTo(to)
         path = Path(data, self.roadSystem.width)
         if path.isEmpty():
             return
         self.pos = path.getLastCoord()
-        self.printRoad(path)
+        self.dir.rotate_ip(Random.randint(0,359))
+        self.roadSystem.Analyze(path)
 
 class Path:
     def __init__(self, data, width):

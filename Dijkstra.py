@@ -34,7 +34,7 @@ class dijkstras:
             if self.relaxUntillRoad(graph, nextIndex):
                 print("road found")
                 return nextIndex
-        raise Exception("road not found")
+        return -1
 
     def relaxUntillRoad(self, graph, v):
         node = graph[v]
