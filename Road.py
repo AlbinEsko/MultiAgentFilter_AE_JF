@@ -51,16 +51,16 @@ class RoadSystem:
         if X < 0 or Y < 0 or X >= self.width or Y >= self.height:
             return
         
-        topFree = Y-1 >= 0
+        topFree = Y+1 < self.height
+        botFree = Y-1 >= 0
         leftFree = X-1 >= 0
-        botFree = Y+1 < self.height
         rightFree = X+1 < self.width
         if topFree:
-            self.graph.getNode(X,Y-1).roadVal = max(self.graph.getNode(X,Y-1).roadVal, value)
-            self.SpreadRoadCoverage(value-1,X,Y-1)
-        if botFree:
             self.graph.getNode(X,Y+1).roadVal = max(self.graph.getNode(X,Y+1).roadVal, value)
-            self.SpreadRoadCoverage(value-1,X, Y+1)
+            self.SpreadRoadCoverage(value-1,X,Y+1)
+        if botFree:
+            self.graph.getNode(X,Y-1).roadVal = max(self.graph.getNode(X,Y-1).roadVal, value)
+            self.SpreadRoadCoverage(value-1,X, Y-1)
         if leftFree:
             self.graph.getNode(X-1,Y).roadVal = max(self.graph.getNode(X-1,Y).roadVal, value)
             self.SpreadRoadCoverage(value-1,X-1,Y)
@@ -68,41 +68,41 @@ class RoadSystem:
             self.graph.getNode(X+1,Y).roadVal = max(self.graph.getNode(X+1,Y).roadVal, value)
             self.SpreadRoadCoverage(value-1,X+1, Y)
         if leftFree and topFree:
-            self.graph.getNode(X-1,Y-1).roadVal = max(self.graph.getNode(X-1,Y-1).roadVal, value)
-            self.SpreadRoadCoverage(value-1,X-1,Y-1)
-        if topFree and rightFree:
-            self.graph.getNode(X+1,Y-1).roadVal = max(self.graph.getNode(X+1,Y-1).roadVal, value)
-            self.SpreadRoadCoverage(value-1,X+1,Y-1)
-        if botFree and rightFree:
-            self.graph.getNode(X+1,Y+1).roadVal = max(self.graph.getNode(X+1,Y+1).roadVal, value)
-            self.SpreadRoadCoverage(value-1,X+1,Y+1)
-        if botFree and leftFree:
             self.graph.getNode(X-1,Y+1).roadVal = max(self.graph.getNode(X-1,Y+1).roadVal, value)
             self.SpreadRoadCoverage(value-1,X-1,Y+1)
+        if topFree and rightFree:
+            self.graph.getNode(X+1,Y+1).roadVal = max(self.graph.getNode(X+1,Y+1).roadVal, value)
+            self.SpreadRoadCoverage(value-1,X+1,Y+1)
+        if botFree and rightFree:
+            self.graph.getNode(X+1,Y-1).roadVal = max(self.graph.getNode(X+1,Y-1).roadVal, value)
+            self.SpreadRoadCoverage(value-1,X+1,Y-1)
+        if botFree and leftFree:
+            self.graph.getNode(X-1,Y-1).roadVal = max(self.graph.getNode(X-1,Y-1).roadVal, value)
+            self.SpreadRoadCoverage(value-1,X-1,Y-1)
     
     def create8WayEdges(self, graph):
         for y in range(graph.height):
             for x in range(graph.width):
-                topFree = y-1 >= 0
+                topFree = y+1 < self.height
+                botFree = y-1 >= 0
                 leftFree = x-1 >= 0
-                botFree = y+1 < self.height
                 rightFree = x+1 < self.width
                 if topFree:
-                    graph.createEdge_xy(x, y, x, y-1, 1 + abs(graph.getNode(x,y-1).height-graph.getNode(x,y).height))
-                if botFree:
                     graph.createEdge_xy(x, y, x, y+1, 1 + abs(graph.getNode(x,y+1).height-graph.getNode(x,y).height))
+                if botFree:
+                    graph.createEdge_xy(x, y, x, y-1, 1 + abs(graph.getNode(x,y-1).height-graph.getNode(x,y).height))
                 if leftFree:
                     graph.createEdge_xy(x, y, x-1, y, 1 + abs(graph.getNode(x-1,y).height-graph.getNode(x,y).height))
                 if rightFree:
                     graph.createEdge_xy(x, y, x+1, y, 1 + abs(graph.getNode(x+1,y).height-graph.getNode(x,y).height))
                 if leftFree and topFree:
-                    graph.createEdge_xy(x, y, x-1, y-1, 1 + abs(graph.getNode(x-1,y-1).height-graph.getNode(x,y).height))
-                if topFree and rightFree:
-                    graph.createEdge_xy(x, y, x+1, y-1, 1 + abs(graph.getNode(x+1,y-1).height-graph.getNode(x,y).height))
-                if botFree and rightFree:
-                    graph.createEdge_xy(x, y, x+1, y+1, 1 + abs(graph.getNode(x+1,y+1).height-graph.getNode(x,y).height))
-                if botFree and leftFree:
                     graph.createEdge_xy(x, y, x-1, y+1, 1 + abs(graph.getNode(x-1,y+1).height-graph.getNode(x,y).height))
+                if topFree and rightFree:
+                    graph.createEdge_xy(x, y, x+1, y+1, 1 + abs(graph.getNode(x+1,y+1).height-graph.getNode(x,y).height))
+                if botFree and rightFree:
+                    graph.createEdge_xy(x, y, x+1, y-1, 1 + abs(graph.getNode(x+1,y-1).height-graph.getNode(x,y).height))
+                if botFree and leftFree:
+                    graph.createEdge_xy(x, y, x-1, y-1, 1 + abs(graph.getNode(x-1,y-1).height-graph.getNode(x,y).height))
                     
 class ExtendorAgent:
     def __init__(self, roadSystem, startPos):
@@ -204,7 +204,7 @@ class ExtendorAgent:
             
     def printRoad(self, path):
         while len(path) != 0:
-            pos = path.pop()
+            pos = path.roadTiles.pop()
             placeX = pos[0]
             placeY = pos[1]
             self.roadSystem.SetRoadMapTile(placeX, placeY)
@@ -237,51 +237,44 @@ class ExtendorAgent:
 
     def dijkstra(self):
         #creatiing full arrays for the whole area feels wastefull, further research for later
-        start = int(self.pos.x + self.pos.y * self.roadSystem.width)
+        start = int(self.pos.x) + int(self.pos.y) * self.roadSystem.width
         if start >= self.roadSystem.graph.nrNodes:
-            raise Exception("agent out of bounds")
+            raise Exception("agent out of bounds at ", start, self.pos, int(self.pos.x), int(self.pos.y), self.roadSystem.width)
         d = Dijkstra.dijkstras(self.roadSystem.graph, start)
         to = d.buildToRoadMinSpanTree(self.roadSystem.graph)
-        path = d.pathTo(to)
-        path = edgesToXY(path, self.roadSystem.width)
+        data = d.pathTo(to)
+        path = Path(data, self.roadSystem.width)
+        if path.isEmpty():
+            return
+        self.pos = path.getLastCoord()
         self.printRoad(path)
+
+class Path:
+    def __init__(self, data, width):
+        #data is a list of directedEdges
+        self.totalWeight = 0
+        self.roadTiles = []
+        self.largestDiff = 0
+        for e in data:
+            self.roadTiles.append((e.to%width, e.to/width))
+            self.totalWeight += e.weight
+            self.largestDiff = max(self.largestDiff, e.weight)
             
-    '''
-    def CreateMinSpanTree(self, start):
-        enqueued = [False for i in range(self.roadSystem.roadGraph.NrNodes())]
-        minSpanTree = [-1 for i in range(self.roadSystem.roadGraph.NrNodes())]
-        queue = Queue.Queue()
-        queue.put(start)
-        enqueued[start] = True
-        while(len(queue) > 0):
-            activeNode = queue.get()
-            if(self.roadSystem.roadGraph[activeNode].weight == 99):
-                break
-            for e in self.roadSystem.roadGraph[activeNode]:
-                toIndex = e
-                if(not enqueued[toIndex]):
-                    enqueued[toIndex] = True
-                    minSpanTree[toIndex] = activeNode
-                    queue.put(toIndex)
-        return (activeNode, minSpanTree)
+    def getLastCoord(self):
+        if self.isEmpty():
+            raise Exception("path is empty")
+        tup = self.roadTiles[len(self.roadTiles)-1]
+        return Vector(tup[0], tup[1]) 
     
-    def BFS(self, start):
-        
-        path = []
-        minSpanTreeData = CreateMinSpanTree(start)
-        minSpanTree = minSpanTreeData[1]
-        goal = minSpanTreeData[0]
-        nodeID = goal
-        while(nodeID != start):
-            path.append(nodeID)
-            nodeID = minSpanTree[nodeID]
-        path.append(start)
-        return path
-        '''
+    def isEmpty(self):
+        return len(self) == 0
+    
+    def __len__(self):
+        return len(self.roadTiles)
+
 def edgesToXY(path, width):
     xy_path = []
-    for e in path:
-        xy_path.append((e.to%width, e.to/width))
+    
     return xy_path
     
 def transIndToXY(i, width):
