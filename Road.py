@@ -39,6 +39,7 @@ class RoadSystem:
         if(suggestion.largestDiff > 3):
             return
         self.CreateRoad(suggestion)
+        print("road added")
         
     def CreateRoad(self, suggestion):
         for tile in suggestion.roadTiles:
@@ -210,7 +211,7 @@ class ExtendorAgent:
             if botFree and leftFree:
                 if self.roadSystem.roadMap[Y+1][X-1] > value:
                     value, nextX, nextY = self.CheckValue(X-1,Y+1,value)
-            print(value, nextX, nextY)
+            #print(value, nextX, nextY)
             path.append([nextX, nextY])
             self.printRoad(path)
             
@@ -255,7 +256,7 @@ class ExtendorAgent:
         d = Dijkstra.dijkstras(self.roadSystem.graph, start)
         to = d.buildToRoadMinSpanTree(self.roadSystem.graph)
         if to == -1:
-            print ("road construction aborted")
+            #print ("road construction aborted")
             return
         data = d.pathTo(to)
         path = Path(data, self.roadSystem.width)

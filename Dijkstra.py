@@ -32,7 +32,7 @@ class dijkstras:
         while not self.pq.isEmpty():
             nextIndex = self.pq.delMin()
             if self.relaxUntillRoad(graph, nextIndex):
-                print("road found")
+                #print("road found")
                 return nextIndex
         return -1
 
