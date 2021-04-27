@@ -105,16 +105,16 @@ class RoadSystem:
                         graph.createEdge_xy(x, y, x+1, y, 1 + abs(graph.getNode(x+1,y).height-graph.getNode(x,y).height))
                 if leftFree and topFree:
                     if graph.getNode(x-1,y+1).liquid == 0:
-                        graph.createEdge_xy(x, y, x-1, y+1, 1 + abs(graph.getNode(x-1,y+1).height-graph.getNode(x,y).height))
+                        graph.createEdge_xy(x, y, x-1, y+1, 1.4 + abs(graph.getNode(x-1,y+1).height-graph.getNode(x,y).height))
                 if topFree and rightFree:
                     if graph.getNode(x+1,y+1).liquid == 0:
-                        graph.createEdge_xy(x, y, x+1, y+1, 1 + abs(graph.getNode(x+1,y+1).height-graph.getNode(x,y).height))
+                        graph.createEdge_xy(x, y, x+1, y+1, 1.4 + abs(graph.getNode(x+1,y+1).height-graph.getNode(x,y).height))
                 if botFree and rightFree:
                     if graph.getNode(x+1,y-1).liquid == 0:
-                        graph.createEdge_xy(x, y, x+1, y-1, 1 + abs(graph.getNode(x+1,y-1).height-graph.getNode(x,y).height))
+                        graph.createEdge_xy(x, y, x+1, y-1, 1.4 + abs(graph.getNode(x+1,y-1).height-graph.getNode(x,y).height))
                 if botFree and leftFree:
                     if graph.getNode(x-1,y-1).liquid == 0:
-                        graph.createEdge_xy(x, y, x-1, y-1, 1 + abs(graph.getNode(x-1,y-1).height-graph.getNode(x,y).height))
+                        graph.createEdge_xy(x, y, x-1, y-1, 1.4 + abs(graph.getNode(x-1,y-1).height-graph.getNode(x,y).height))
                     
 class ExtendorAgent:
     def __init__(self, roadSystem, startPos):

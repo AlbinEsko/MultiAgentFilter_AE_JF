@@ -27,7 +27,7 @@ def perform(level, box, options):
     roads = Road.RoadSystem(level,box,hgtMap,liquidmap, boxOrigo)
     print("creating agents")
     roads.CreateAgents(10)
-    for r in range(500):
+    for r in range(100):
         roads.UpdateAgents()
     #for r in roads.roadMap:
     #    print(r)
