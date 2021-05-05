@@ -3,6 +3,7 @@
 class Graph:
     def __init__(self, w, h, hgtMap, lqdMap):
         self.nrEdges = 0
+        self.nrRoadEdges = 0
         self.nrNodes = w * h
         self.graph = []
         self.width = w
@@ -26,6 +27,11 @@ class Graph:
     def addEdge(self, edge):
         self.graph[edge.frm].addEdge(edge)
         self.nrEdges = self.nrEdges + 1
+        
+    def addRoadEdge(self, one, other):
+        self.graph[one].addEdge(DirectedEdge(other, one, 1))
+        self.graph[other].addEdge(DirectedEdge(one, other, 1))
+        self.nrRoadEdges = self.nrRoadEdges + 2
     
     def createEdge(self, frm, to, weight = 1):
         self.graph[frm].createEdge(to, weight)
@@ -55,6 +61,7 @@ class Node:
         self.x = x
         self.y = y
         self.adjacent = []
+        self.roadAdjacent = []
         self.height = height
         self.liquid = liquid
         self.roadVal = 0
