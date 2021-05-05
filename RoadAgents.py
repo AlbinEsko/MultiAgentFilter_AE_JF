@@ -171,11 +171,15 @@ class ConnectorAgent:
         self.pos = Vector(float(startPos.x), float(startPos.y))
         self.blockPos = Vector(0,0)
         self.dir = Vector(1,0)
-        self.dir.rotate_ip(Random.randint(0,359))
+        self.dir.rotate_ip(Random.randint(0,7)*45)
     
     
     def Move(self):
         oldPos = self.pos
+        #has direction
+        #scan all surounding tiles, 
+        #then pick one which doesnt double back unless neccecary, calced throug dir
+        #make move and set new dir (new pos - old pos)
         if(not self.OutOfBounds()):
             self.pos += self.dir * self.speed
             self.dir.rotate_ip(Random.randint(-20,20)) #Needs improvement for the wanted wandering behavior; move to roadMap values of zero
