@@ -167,40 +167,60 @@ class ConnectorAgent:
     
     def __init__(self, roadSystem, startPos):
         self.roadSystem = roadSystem
-        self.speed = 1
         self.pos = Vector(float(startPos.x), float(startPos.y))
-        self.blockPos = Vector(0,0)
-        self.dir = Vector(1,0)
-        self.dir.rotate_ip(Random.randint(0,7)*45)
+        self.oldPos = self.pos
+        self.range = 10
     
+    def Act(self):
+        self.Move()
     
     def Move(self):
-        oldPos = self.pos
-        #has direction
+        #get direction
         #scan all surounding tiles, 
-        #then pick one which doesnt double back unless neccecary, calced throug dir
-        #make move and set new dir (new pos - old pos)
-        if(not self.OutOfBounds()):
-            self.pos += self.dir * self.speed
-            self.dir.rotate_ip(Random.randint(-20,20)) #Needs improvement for the wanted wandering behavior; move to roadMap values of zero
-        else:
-            self.dir.rotate_ip(180)
-            self.pos += self.dir * self.speed
-        return self.ConvertToIntCoords(self.pos) == self.ConvertToIntCoords(oldPos)
+        #then pick one which doesnt double back unless neccecary
+        
+        possibleMoves = self.ScanForAdacentroad()
+        if len(possibleMoves) == 0:
+            swap = self.pos
+            self.pos = self.oldPos
+            self.oldPos = swap
+            return
+        self.oldPos = self.pos
+        self.pos = Random.choice(possibleMoves)
     
-    def OutOfBounds(self):
-        if(self.pos.x + self.dir.x * self.speed < 0):
+    def OutOfBounds(self, testDir):
+        if(self.pos.x + testDir.x < 0):
             return True
-        if(self.pos.y + self.dir.y * self.speed < 0):
+        if(self.pos.y + testDir.y < 0):
             return True
-        if(self.pos.x + self.dir.x * self.speed >= self.roadSystem.width):
+        if(self.pos.x + testDir.x >= self.roadSystem.width):
             return True
-        if(self.pos.y + self.dir.y * self.speed >= self.roadSystem.height):
+        if(self.pos.y + testDir.y >= self.roadSystem.height):
             return True
         return False
     
+    def ScanForAdacentroad(self):
+        adjNodes = []
+        look = Vector(1,0)
+        for i in range(8):
+            tempDir = look.rotate(i * 45)
+            tempDir.x = round(tempDir.x)
+            tempDir.y = round(tempDir.y)
+            #temp dir is now of only integers
+            if self.OutOfBounds(tempDir):
+                continue
+            if self.pos + tempDir == self.oldPos:
+                continue
+            nextNode = self.roadSystem.graph.getNode(round(self.pos.x + tempDir.x),round(self.pos.y + tempDir.y))
+            if nextNode.roadValue == 99:
+                adjNodes.append(self.pos + tempDir)
+        return adjNodes
     
-    
+    def SampleNearRoad(self):
+        direction = Vector(1,0)
+        direction.rotate_ip(Random.randint(0,359))
+        endPoint = self.pos + direction*self.range
+        #implement Digital differential analyzer rasterizer
     
     
     
