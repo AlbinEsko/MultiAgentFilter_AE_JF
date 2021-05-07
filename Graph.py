@@ -29,8 +29,8 @@ class Graph:
         self.nrEdges = self.nrEdges + 1
         
     def addRoadEdge(self, one, other):
-        self.graph[one].addEdge(DirectedEdge(other, one, 1))
-        self.graph[other].addEdge(DirectedEdge(one, other, 1))
+        self.graph[one].addRoadEdge(DirectedEdge(other, one, 1))
+        self.graph[other].addRoadEdge(DirectedEdge(one, other, 1))
         self.nrRoadEdges = self.nrRoadEdges + 2
     
     def createEdge(self, frm, to, weight = 1):
@@ -68,6 +68,9 @@ class Node:
         
     def addEdge(self, edge):
         self.adjacent.append(edge)
+    
+    def addRoadEdge(self, edge):
+        self.roadAdjacent.append(edge)
     
     def createEdge(self, to, weight = 1):
         self.adjacent.append(DirectedEdge(to, self.index, weight))

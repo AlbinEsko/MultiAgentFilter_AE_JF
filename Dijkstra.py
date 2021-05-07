@@ -72,7 +72,7 @@ class dijkstras:
     def hasPathTo(self, v):
         return self.distTo[v] < sys.maxint
     
-    def pathTo(self, v):
+    def pathTo(self,v):
         if not self.hasPathTo(v):
             return None
         path = []

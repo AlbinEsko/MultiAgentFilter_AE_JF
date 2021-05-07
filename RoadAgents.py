@@ -153,32 +153,45 @@ class ExtendorAgent:
         #print("sending suggestion to roadsystem")
         self.roadSystem.Analyze(path)
         
+        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 class ConnectorAgent:
     
     def __init__(self, roadSystem, startPos):
         self.roadSystem = roadSystem
         self.pos = Vector(float(startPos.x), float(startPos.y))
         self.oldPos = self.pos
-        self.range = 10
-        self.distanceMultiplier = 1.2
+        self.range = 16
+        self.distanceMultiplier = 2
     
     def Act(self):
         self.Move()
         self.SampleNearRoad()
     
     def Move(self):
-        #get direction
-        #scan all surounding tiles, 
-        #then pick one which doesnt double back unless neccecary
-        
         possibleMoves = self.ScanForAdacentroad()
         if len(possibleMoves) == 0:
             swap = self.pos
             self.pos = self.oldPos
             self.oldPos = swap
+            #print("Doublebacked")
             return
         self.oldPos = self.pos
         self.pos = Random.choice(possibleMoves)
+        #print(self.pos)
     
     def OutOfBounds(self, testDir):
         if(self.pos.x + testDir.x < 0):
@@ -235,6 +248,7 @@ class ConnectorAgent:
     
     def FindDistanceOnRoad(self,checkedNode):
         posIndex = int(self.pos.x + self.pos.y * self.roadSystem.width)
+        #print(self.roadSystem.graph[posIndex].roadAdjacent)
         d = Dijkstra.dijkstras(self.roadSystem.graph, checkedNode.index)
         d.buildOnRoadMinSpanTree(self.roadSystem.graph)
         edges = d.pathTo(posIndex)
