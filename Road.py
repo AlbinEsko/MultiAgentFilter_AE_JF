@@ -24,7 +24,7 @@ class RoadSystem:
         self.graph = Graph.Graph(box.width, box.length,hgtMap,lqdMap)
         self.create8WayEdges(self.graph)
         self.intersectionGraph.append([])
-        self.SetRoadMapTile(self.width/2,self.height/2)
+        self.SetRoadMapTile(self.width/2,self.height/2, 0)
         self.multiplier = 4
       
     def CreateExtendors(self, nrAgents):
@@ -41,34 +41,35 @@ class RoadSystem:
             a.Act()
             #print(a, "acted")
         
-    def Analyze(self, suggestion):
+    def Analyze(self, suggestion, data):
         start = suggestion.getFirstCoord()
         end = suggestion.getLastCoord()
         manhatDist = abs(end.x - start.x) + abs(end.y - start.y)
         #print(suggestion.totalWeight, len(suggestion.roadTiles), manhatDist * self.multiplier, suggestion.largestDiff)
         if(suggestion.totalWeight > manhatDist * self.multiplier): #some value dependent on the expeced lenth of a path
             #print("too costly road")
-            return
+            return False
         if(suggestion.largestDiff > 3):
             #print("too steep section")
-            return
-        self.CreateRoad(suggestion)
+            return False
+        self.CreateRoad(suggestion, data)
         #print("road added")
+        return True
         
-    def CreateRoad(self, suggestion):
+    def CreateRoad(self, suggestion, data):
         prevTileX=-1
         prevTileY=-1
         for tile in suggestion.roadTiles:
-            self.SetRoadMapTile(tile[0],tile[1])
+            self.SetRoadMapTile(tile[0],tile[1], data)
             if prevTileX != -1:
                 self.graph.addRoadEdge(tile[0] + tile[1] * self.width, prevTileX + prevTileY * self.width)
                 #print("creaded road edge")
             prevTileX=tile[0]
             prevTileY=tile[1]
             
-    def SetRoadMapTile(self, x, y):
+    def SetRoadMapTile(self, x, y, data):
         self.graph.getNode(x,y).roadVal = 99
-        uf.setBlock(self.level, (35,1), int(self.origo.x + x), self.graph.getNode(x,y).height, int(self.origo.y + y ))
+        uf.setBlock(self.level, (35,data), int(self.origo.x + x), self.graph.getNode(x,y).height, int(self.origo.y + y ))
         self.SpreadRoadCoverage(5, x, y)
         
     def SpreadRoadCoverage(self, value, X, Y):

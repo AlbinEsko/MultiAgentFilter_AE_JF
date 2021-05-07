@@ -151,7 +151,7 @@ class ExtendorAgent:
         self.pos = path.getLastCoord()
         self.dir.rotate_ip(Random.randint(0,359))
         #print("sending suggestion to roadsystem")
-        self.roadSystem.Analyze(path)
+        self.roadSystem.Analyze(path, 1)
         
         
 
@@ -256,7 +256,7 @@ class ConnectorAgent:
             print("no path found")
             return
         path = Road.Path(edges, self.roadSystem.width)
-        if path.totalWeight < abs(int(self.pos.x) - checkedNode.x) + abs(int(self.pos.y) - checkedNode.y) * self.distanceMultiplier:
+        if path.totalWeight < 20: #abs(int(self.pos.x) - checkedNode.x) + abs(int(self.pos.y) - checkedNode.y) * self.distanceMultiplier:
             print("existing path close enough")
             return
         d = Dijkstra.dijkstras(self.roadSystem.graph, posIndex)
@@ -264,7 +264,8 @@ class ConnectorAgent:
         edges = d.pathTo(checkedNode.index)
         path = Road.Path(edges, self.roadSystem.width)
         print("Suggesting connection")
-        self.roadSystem.Analyze(path)
+        if self.roadSystem.Analyze(path, 2):
+            self.pos = path.getLastCoord()
         
     
     
