@@ -222,7 +222,7 @@ class ConnectorAgent:
         x = self.pos.x
         y = self.pos.y
         i = 1
-        while i <= step and x > 0 and x <= self.roadSystem.width and y > 0 and y <= self.roadSystem.height:
+        while i <= step and x >= 0 and x < self.roadSystem.width-1 and y >= 0 and y < self.roadSystem.height-1:
             checkedNode = self.roadSystem.graph.getNode(int(x), int(y))
             if checkedNode.roadVal == 99 and checkedNode.index != posIndex:
                 self.FindDistanceOnRoad(checkedNode)
