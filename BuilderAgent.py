@@ -2,24 +2,19 @@
 from pymclevel import BoundingBox, MCLevel
 
 
-def preform(level,box,options):
+def perform(level,box,options):
     print("preforming")
 
 
-class BuilderAgent():
+class BuilderAgent:
 
     def __init__(self, level, box):
         # type: (MCLevel, BoundingBox) -> None
-        self.level =level
+        self.level = level
         self.box = box
         position = self.box.origin
-        self.CreateHouses()
+        self.CreateHouse(box)
+        self.buildings = []
 
-    def CreateHouses(self, nrModules):
-        moduels = []
-        for x in range(nrModules):
-            print("s")
-
-
-
-
+    def CreateHouse(self,box):
+        pass

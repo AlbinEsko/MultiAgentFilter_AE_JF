@@ -5,13 +5,15 @@ Created on Mon Mar  1 13:08:34 2021
 @author: Albin Esko & Johan Fritiofsson
 """
 from array import *
-from pymclevel import alphaMaterials
+from pymclevel import alphaMaterials, BoundingBox
 import utilityFunctions as uf
 import Graph as Graph
 import BlockIDs as Blocks
 from typing import List, Any
+from Building import Module,Building, House
 #import Road as Road
 from pygame.math import Vector2 as Vector
+from Building import House
 
 inputs = (
     ("test1", "label"),
@@ -22,8 +24,11 @@ def perform(level, box, options):
     print("Performing")
     hgtMap, liquidmap = createHeightMap(level, box)
     print("height map and liquid map made")
-    print(hgtMap[1][4])
-    print(box.origin)
+    print(hgtMap)
+
+    house = House(box,level,hgtMap)
+    house.generate(1)
+
     #markRegions(level, box, hgtMap, liquidmap)
     boxOrigo = Vector(box.minx, box.minz)
     #roads = Road.RoadSystem(level,box,hgtMap,liquidmap, boxOrigo)
@@ -44,6 +49,9 @@ def perform(level, box, options):
     puddles = Graph.newLiquidMap(graph, liquidmap)
     printRegions(level, box, puddles)
     '''
+    
+
+
 def createHeightMap(level, box):
     row = box.maxx - box.minx #vågräta
     column = box.maxz - box.minz #lodräta
