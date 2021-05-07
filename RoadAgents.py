@@ -25,11 +25,11 @@ class ExtendorAgent:
         
     def Act(self):
         if not self.Move():
+            print("same tile")
             return
-        #self.TraceTraveledPath()
-        if self.Analyze():
-            self.Suggest()
-    
+        #print("new tile", int(self.pos.x), int(self.pos.y))
+        self.Analyze()
+
     '''Wander around 
     Keep close to existing roads'''
     def Move(self):
@@ -63,6 +63,7 @@ class ExtendorAgent:
     '''Analyze current position for road coverage'''
     def Analyze(self):
         if self.roadSystem.graph.getNode(int(self.pos.x),int(self.pos.y)).roadVal == 0:
+            #print("found unserviced patch")
             self.dijkstra()
             
     '''follow roadmap distance to existing road and log every step'''
@@ -131,19 +132,7 @@ class ExtendorAgent:
         value = self.roadSystem.roadMap[Y][X]
         nextX = X
         nextY = Y
-        return value, nextX, nextY
-      
-    #def MakeGoodRoad(self):
-        #2 different weight values, Height difference and deviation from shortest
-        #Bad: takes a long winding road to have no height difference
-        #Bad: makes the shortest road extention possible with no regard for height difference
-        #Good but shortsighted: takes the lowest weight among equaly close options
-        #Good but shortsighted: takes the closest option of equaly weighed options
-        #Requirement: never takes a path with a height difference larger than 1
-        #improvement: allow terraforming to take shorter roads
-        #weights/costs: 1 for moving horizontaly, +1 per height movement, +1 per terraform
-
-        
+        return value, nextX, nextY 
 
     def dijkstra(self):
         #creatiing full arrays for the whole area feels wastefull, further research for later
@@ -161,6 +150,7 @@ class ExtendorAgent:
             return
         self.pos = path.getLastCoord()
         self.dir.rotate_ip(Random.randint(0,359))
+        #print("sending suggestion to roadsystem")
         self.roadSystem.Analyze(path)
         
 class ConnectorAgent:
@@ -170,9 +160,11 @@ class ConnectorAgent:
         self.pos = Vector(float(startPos.x), float(startPos.y))
         self.oldPos = self.pos
         self.range = 10
+        self.distanceMultiplier = 1.2
     
     def Act(self):
         self.Move()
+        self.SampleNearRoad()
     
     def Move(self):
         #get direction
@@ -211,19 +203,55 @@ class ConnectorAgent:
                 continue
             if self.pos + tempDir == self.oldPos:
                 continue
-            nextNode = self.roadSystem.graph.getNode(round(self.pos.x + tempDir.x),round(self.pos.y + tempDir.y))
-            if nextNode.roadValue == 99:
+            nextNode = self.roadSystem.graph.getNode(int(round(self.pos.x + tempDir.x)),int(round(self.pos.y + tempDir.y)))
+            if nextNode.roadVal == 99:
                 adjNodes.append(self.pos + tempDir)
         return adjNodes
     
     def SampleNearRoad(self):
+        posIndex = self.pos.x + self.pos.y * self.roadSystem.width
         direction = Vector(1,0)
         direction.rotate_ip(Random.randint(0,359))
-        endPoint = self.pos + direction*self.range
-        #implement Digital differential analyzer rasterizer
+        endPoint = self.pos + direction * self.range
+        #Digital differential analyzer algorithm
+        dx = endPoint.x - self.pos.x
+        dy = endPoint.y - self.pos.y
+        step = max(abs(dx), abs(dy))
+        dx /= step
+        dy /= step
+        x = self.pos.x
+        y = self.pos.y
+        i = 1
+        while i <= step and x > 0 and x <= self.roadSystem.width and y > 0 and y <= self.roadSystem.height:
+            checkedNode = self.roadSystem.graph.getNode(int(x), int(y))
+            if checkedNode.roadVal == 99 and checkedNode.index != posIndex:
+                self.FindDistanceOnRoad(checkedNode)
+                break
+            x += dx
+            y += dy
+            i += 1
+            
     
     
-    
+    def FindDistanceOnRoad(self,checkedNode):
+        posIndex = int(self.pos.x + self.pos.y * self.roadSystem.width)
+        d = Dijkstra.dijkstras(self.roadSystem.graph, checkedNode.index)
+        d.buildOnRoadMinSpanTree(self.roadSystem.graph)
+        edges = d.pathTo(posIndex)
+        if edges == None:
+            print("no path found")
+            return
+        path = Road.Path(edges, self.roadSystem.width)
+        if path.totalWeight < abs(int(self.pos.x) - checkedNode.x) + abs(int(self.pos.y) - checkedNode.y) * self.distanceMultiplier:
+            print("existing path close enough")
+            return
+        d = Dijkstra.dijkstras(self.roadSystem.graph, posIndex)
+        d.buildCompleteMinSpanTree(self.roadSystem.graph)
+        edges = d.pathTo(checkedNode.index)
+        path = Road.Path(edges, self.roadSystem.width)
+        print("Suggesting connection")
+        self.roadSystem.Analyze(path)
+        
     
     
     

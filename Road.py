@@ -25,22 +25,35 @@ class RoadSystem:
         self.create8WayEdges(self.graph)
         self.intersectionGraph.append([])
         self.SetRoadMapTile(self.width/2,self.height/2)
+        self.multiplier = 4
       
-    def CreateAgents(self, nrAgents):
+    def CreateExtendors(self, nrAgents):
         for i in range(nrAgents):
             self.agents.append(RoadAgents.ExtendorAgent(self, Vector(len(self.heightMap[0])/2, len(self.heightMap)/2)))
+        #print("Extendors Created")
+            
+    def CreateConnectors(self, nrAgents):
+        for i in range(nrAgents):
+            self.agents.append(RoadAgents.ConnectorAgent(self, Vector(len(self.heightMap[0])/2, len(self.heightMap)/2)))
         
     def UpdateAgents(self):
         for a in self.agents:
             a.Act()
+            #print(a, "acted")
         
     def Analyze(self, suggestion):
-        if(suggestion.totalWeight > 10): #some value dependent on the expeced lenth of a path
+        start = suggestion.getFirstCoord()
+        end = suggestion.getLastCoord()
+        manhatDist = abs(end.x - start.x) + abs(end.y - start.y)
+        #print(suggestion.totalWeight, len(suggestion.roadTiles), manhatDist * self.multiplier, suggestion.largestDiff)
+        if(suggestion.totalWeight > manhatDist * self.multiplier): #some value dependent on the expeced lenth of a path
+            #print("too costly road")
             return
         if(suggestion.largestDiff > 3):
+            #print("too steep section")
             return
         self.CreateRoad(suggestion)
-        print("road added")
+        #print("road added")
         
     def CreateRoad(self, suggestion):
         prevTileX=-1
@@ -49,6 +62,7 @@ class RoadSystem:
             self.SetRoadMapTile(tile[0],tile[1])
             if prevTileX != -1:
                 self.graph.addRoadEdge(tile[0] + tile[1] * self.width, prevTileX + prevTileY * self.width)
+                #print("creaded road edge")
             prevTileX=tile[0]
             prevTileY=tile[1]
             
@@ -113,16 +127,16 @@ class RoadSystem:
                         graph.createEdge_xy(x, y, x+1, y, 1 + abs(graph.getNode(x+1,y).height-graph.getNode(x,y).height))
                 if leftFree and topFree:
                     if graph.getNode(x-1,y+1).liquid == 0:
-                        graph.createEdge_xy(x, y, x-1, y+1, 1.4 + abs(graph.getNode(x-1,y+1).height-graph.getNode(x,y).height))
+                        graph.createEdge_xy(x, y, x-1, y+1, 2 + abs(graph.getNode(x-1,y+1).height-graph.getNode(x,y).height))
                 if topFree and rightFree:
                     if graph.getNode(x+1,y+1).liquid == 0:
-                        graph.createEdge_xy(x, y, x+1, y+1, 1.4 + abs(graph.getNode(x+1,y+1).height-graph.getNode(x,y).height))
+                        graph.createEdge_xy(x, y, x+1, y+1, 2 + abs(graph.getNode(x+1,y+1).height-graph.getNode(x,y).height))
                 if botFree and rightFree:
                     if graph.getNode(x+1,y-1).liquid == 0:
-                        graph.createEdge_xy(x, y, x+1, y-1, 1.4 + abs(graph.getNode(x+1,y-1).height-graph.getNode(x,y).height))
+                        graph.createEdge_xy(x, y, x+1, y-1, 2 + abs(graph.getNode(x+1,y-1).height-graph.getNode(x,y).height))
                 if botFree and leftFree:
                     if graph.getNode(x-1,y-1).liquid == 0:
-                        graph.createEdge_xy(x, y, x-1, y-1, 1.4 + abs(graph.getNode(x-1,y-1).height-graph.getNode(x,y).height))
+                        graph.createEdge_xy(x, y, x-1, y-1, 2 + abs(graph.getNode(x-1,y-1).height-graph.getNode(x,y).height))
                     
 
 
@@ -141,6 +155,12 @@ class Path:
         if self.isEmpty():
             raise Exception("path is empty")
         tup = self.roadTiles[len(self.roadTiles)-1]
+        return Vector(tup[0], tup[1]) 
+    
+    def getFirstCoord(self):
+        if self.isEmpty():
+            raise Exception("path is empty")
+        tup = self.roadTiles[0]
         return Vector(tup[0], tup[1]) 
     
     def isEmpty(self):

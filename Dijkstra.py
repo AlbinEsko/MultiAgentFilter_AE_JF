@@ -26,7 +26,22 @@ class dijkstras:
                     self.pq.changeKey(w, self.distTo[w])
                 else:
                     self.pq.insert(w, self.distTo[w])
-                    
+    
+    def buildOnRoadMinSpanTree(self, graph):
+        while not self.pq.isEmpty():
+            self.relaxOnRoad(graph, self.pq.delMin())
+      
+    def relaxOnRoad(self, graph, v):
+        edgeList = graph[v].roadAdjacent
+        for edge in edgeList:
+            w = edge.to
+            if self.distTo[w] > self.distTo[v] + edge.weight:
+                self.distTo[w] = self.distTo[v] + edge.weight
+                self.edgeTo[w] = edge
+                if self.pq.contains(w):
+                    self.pq.changeKey(w, self.distTo[w])
+                else:
+                    self.pq.insert(w, self.distTo[w])     
                     
     def buildToRoadMinSpanTree(self, graph):
         while not self.pq.isEmpty():

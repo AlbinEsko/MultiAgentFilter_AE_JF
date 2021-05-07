@@ -26,12 +26,11 @@ def perform(level, box, options):
     boxOrigo = Vector(box.minx, box.minz)
     roads = Road.RoadSystem(level,box,hgtMap,liquidmap, boxOrigo)
     print("creating agents")
-    roads.CreateAgents(10)
+    roads.CreateExtendors(10)
+    roads.CreateConnectors(5)
     for r in range(100):
         roads.UpdateAgents()
-    #for r in roads.roadMap:
-    #    print(r)
-    
+        #print(r)
     
     '''
     graph = Graph.Graph(box.width, box.length)
