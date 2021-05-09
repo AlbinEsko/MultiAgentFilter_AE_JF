@@ -3,18 +3,21 @@ from collections import namedtuple
 import random as random
 from MAF_Utility import Direction
 import utilityFunctions as uf
+from pymclevel.box import Vector
 
 _expansion = namedtuple("_expansion", ("n", "e", "s", "w"))
 
 
 class Building(object):
-    def __init__(self, yard, level, heightmap):
-        # type: (BoundingBox, MCLevel, List[List[int]]) -> None
+    def __init__(self, yard, level, heightmap,dir_to_road):
+        # type: (BoundingBox, MCLevel, List[List[int]], Direction) -> None
         print("Building")
         self.yard = yard
         self.level = level
         self.heightmap = heightmap
+        self.dir_to_road = dir_to_road
         self.modules = []
+        self.floor = []
         self.doors = []
         self.windows = []
         self.walls = []
@@ -26,13 +29,42 @@ class Building(object):
 
 
 class House(Building):
-    def __init__(self, yard, level, heightmap):
-        Building.__init__(self, yard, level, heightmap)
+    def __init__(self, yard, level, heightmap, dir_to_road):
+        Building.__init__(self, yard, level, heightmap, dir_to_road)
 
     def generate(self, nr_of_modules):
         # type: (int) -> House
         self.create_modules(nr_of_modules)
+        self.create_floor()
         self.create_walls()
+
+        total_doors = len(self.modules)
+
+        for module in range(len(self.modules)):
+            if total_doors >0:
+                doors_available = 1
+                total_doors -=1
+
+            for wall in self.walls[module*4:module*4+4]:
+                if doors_available >0:
+                    if wall.wall_side.value is self.dir_to_road.value:
+                        free_slots = self.get_free_slots(wall.slots)
+                        wall.build_door(random.choice(free_slots))
+
+        for module in range(len(self.modules)):
+            for wall in self.walls[module*4:module*4+4]:
+                while wall.resources > 0:
+                    free_slots = self.get_free_slots(wall.slots)
+                    if len(free_slots) == 0:
+                        break
+                    wall.build_window(random.choice(free_slots), random.randint(2,4))
+
+        for wall in self.walls:
+            print(wall.slots)
+
+
+
+
 
     def create_modules(self, nr_of_modules):
         # type: (int) -> None
@@ -141,13 +173,32 @@ class House(Building):
 
         x = wall.box.origin.x
         x1 = wall.box.origin.x + wall.box.size.x - 1
-        # y = wall.origin.y
-        ymax = wall.box.origin.y + wall.box.size.y
+        y = wall.box.origin.y
+        ymax = + wall.box.size.y
+        print(wall.box.origin.y, wall.box.size.y)
         z = wall.box.origin.z
         z1 = wall.box.origin.z + wall.box.size.z - 1
-        for y in range(ymax):
-            uf.setBlock(self.level, (block, blockid), x, y, z)
-            uf.setBlock(self.level, (block, blockid), x1, y, z1)
+        for i in range(ymax):
+            uf.setBlock(self.level, (block, blockid), x, y+i, z)
+            uf.setBlock(self.level, (block, blockid), x1, y+i, z1)
+
+    def get_free_slots(self, slots):
+        # type: ([]) -> [int]
+        free_slots = []
+        for x in range(len(slots)):
+            if slots[x] == None:
+                free_slots.append(x)
+        return free_slots
+
+    def create_floor(self):
+        for module in self.modules:
+            origin = Vector(module.box.origin.x, module.box.origin.y-1, module.box.origin.z)
+            size = Vector(module.box.size.x, 1, module.box.size.z)
+            floor = BoundingBox(origin,size)
+            self.floor.append(floor)
+            self.fill_box(floor)
+            
+        
 
 
 class Module:
@@ -235,14 +286,91 @@ class Module:
 
 class Wall:
 
-    def __init__(self, box, direction, building):
+    def __init__(self, box, wall_side, building):
         # type: (BoundingBox, Direction) -> None
         self.box = box
         self.window = []
         self.door = []
-        self.direction = direction
+        self.wall_side = wall_side
         self.building = building
+        self.slots = [None] * (self.get_length() - 2)
+        self.resources = len(self.slots) / 3
 
-    def build_door(self):
-        if self.direction == Direction.NORTH or self.direction == Direction.SOUTH:
-            middle = self.box.o
+
+    def build_door(self, slot, block=64, ):
+        """Builds door, default oakdoor"""
+        data1 = 9 # Upper, Right Hinge, Unpowered
+        data2 = self.get_rotation_door_data()
+        x = 0
+        y = self.box.origin.y +1
+        z = 0
+
+        if self.wall_side == Direction.NORTH or self.wall_side == Direction.SOUTH:
+            x = self.box.origin.x + slot +1
+            z = self.box.origin.z
+        else:
+            x = self.box.origin.x
+            z = self.box.origin.z + slot +1
+        uf.setBlock(self.building.level,(block, data1), x, y, z)
+        uf.setBlock(self.building.level,(block, data2), x, y-1, z)
+        self.slots[slot] = "Door"
+        # self.resources -= 1
+
+    def build_window(self, slot, width, height=2, block=20):
+        """Builds window, default Glass block"""
+        for x in range(width):
+            try:
+                 if self.slots[slot+x] is not None:
+                     print("Trying to build on already build slot, exiting")
+                     return
+            except IndexError:
+                print("Trying outside of slots")
+                return
+        y = self.box.origin.y + height
+        x_forward = True
+        if self.wall_side == Direction.NORTH or self.wall_side == Direction.SOUTH:
+            x = self.box.origin.x + slot +1
+            z = self.box.origin.z
+        else:
+            x_forward = False
+            x = self.box.origin.x
+            z = self.box.origin.z + slot +1
+
+        # if x_forward:
+        #     for i in range(width):
+        #         self.slots[slot + i] = "Window"
+        #         for j in range(height):
+        #             uf.setBlock(self.building.level,(block,0), x + i, y - j, z)
+        # else:
+        #     for i in range(width):
+        #         self.slots[slot + i] = "Window"
+        #         for j in range(height):
+        #             uf.setBlock(self.building.level,(block,0), x, y - j, z + i)
+
+        for i in range(width):
+            self.slots[slot + i] = "Window"
+            for j in range(height):
+                if x_forward:
+                    uf.setBlock(self.building.level,(block,0), x + i, y - j, z)
+                else:
+                    uf.setBlock(self.building.level, (block, 0), x, y - j, z + i)
+
+        self.resources -= 1
+
+
+
+    def get_length(self):
+        """Returns the length of the wall"""
+        if self.wall_side == Direction.NORTH or self.wall_side == Direction.SOUTH:
+            return self.box.size.x
+        return self.box.size.z
+
+    def get_rotation_door_data(self):
+        if self.wall_side == Direction.NORTH:
+            return 1
+        elif self.wall_side == Direction.EAST:
+            return 2
+        elif self.wall_side == Direction.SOUTH:
+            return 3
+        else:
+            return 0

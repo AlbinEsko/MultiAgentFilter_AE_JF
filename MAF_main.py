@@ -14,6 +14,7 @@ from Building import Module,Building, House
 #import Road as Road
 from pygame.math import Vector2 as Vector
 from Building import House
+from MAF_Utility import Direction
 
 inputs = (
     ("test1", "label"),
@@ -26,7 +27,7 @@ def perform(level, box, options):
     print("height map and liquid map made")
     print(hgtMap)
 
-    house = House(box,level,hgtMap)
+    house = House(box,level,hgtMap,Direction.EAST)
     house.generate(1)
 
     #markRegions(level, box, hgtMap, liquidmap)
