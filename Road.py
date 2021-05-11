@@ -71,6 +71,7 @@ class RoadSystem:
         self.graph.getNode(x,y).roadVal = 99
         uf.setBlock(self.level, (35,data), int(self.origo.x + x), self.graph.getNode(x,y).height, int(self.origo.y + y ))
         self.SpreadRoadCoverage(5, x, y)
+        print("Tile and coverage set")
         
     def SpreadRoadCoverage(self, value, X, Y):
         if value == 0:

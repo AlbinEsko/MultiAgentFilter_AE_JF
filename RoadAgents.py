@@ -159,10 +159,10 @@ class ExtendorAgent:
 
 
 
-
-
-
-
+#########################################################
+#########################################################
+#########################################################
+#########################################################
 
 
 
@@ -175,11 +175,14 @@ class ConnectorAgent:
         self.pos = Vector(float(startPos.x), float(startPos.y))
         self.oldPos = self.pos
         self.range = 16
-        self.distanceMultiplier = 2
+        self.distanceMultiplier = 2.5
     
     def Act(self):
         self.Move()
-        self.SampleNearRoad()
+        self.TraceTraveledPath()
+        self.Move()
+        self.TraceTraveledPath()
+        #self.SampleNearRoad()
     
     def Move(self):
         possibleMoves = self.ScanForAdacentroad()
@@ -222,7 +225,7 @@ class ConnectorAgent:
         return adjNodes
     
     def SampleNearRoad(self):
-        posIndex = self.pos.x + self.pos.y * self.roadSystem.width
+        posIndex = int(self.pos.x) + int(self.pos.y) * self.roadSystem.width
         direction = Vector(1,0)
         direction.rotate_ip(Random.randint(0,359))
         endPoint = self.pos + direction * self.range
@@ -244,10 +247,11 @@ class ConnectorAgent:
             y += dy
             i += 1
             
-    
+    def TraceTraveledPath(self):
+        uf.setBlock(self.roadSystem.level, (35,0), int(self.roadSystem.origo.x + self.pos.x), self.roadSystem.heightMap[int(self.pos.y)][int(self.pos.x)], int(self.roadSystem.origo.y + self.pos.y ))
     
     def FindDistanceOnRoad(self,checkedNode):
-        posIndex = int(self.pos.x + self.pos.y * self.roadSystem.width)
+        posIndex = int(self.pos.x) + int(self.pos.y) * self.roadSystem.width
         #print(self.roadSystem.graph[posIndex].roadAdjacent)
         d = Dijkstra.dijkstras(self.roadSystem.graph, checkedNode.index)
         d.buildOnRoadMinSpanTree(self.roadSystem.graph)
@@ -256,7 +260,9 @@ class ConnectorAgent:
             print("no path found")
             return
         path = Road.Path(edges, self.roadSystem.width)
-        if path.totalWeight < 20: #abs(int(self.pos.x) - checkedNode.x) + abs(int(self.pos.y) - checkedNode.y) * self.distanceMultiplier:
+        eqldDist = np.sqrt(abs(int(self.pos.x) - checkedNode.x) ** 2 + abs(int(self.pos.y) - checkedNode.y) ** 2)
+        print(eqldDist)
+        if path.totalWeight < max(20.0, eqldDist * self.distanceMultiplier):
             print("existing path close enough")
             return
         d = Dijkstra.dijkstras(self.roadSystem.graph, posIndex)
@@ -267,11 +273,6 @@ class ConnectorAgent:
         if self.roadSystem.Analyze(path, 2):
             self.pos = path.getLastCoord()
         
-    
-    
-    
-    
-    
     
     
     
