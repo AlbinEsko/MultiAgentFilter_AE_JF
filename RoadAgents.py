@@ -153,29 +153,17 @@ class ExtendorAgent:
         #print("sending suggestion to roadsystem")
         self.roadSystem.Analyze(path, 1)
         
-        
-
-
-
-
-
 #########################################################
 #########################################################
 #########################################################
 #########################################################
-
-
-
-
-
 class ConnectorAgent:
-    
     def __init__(self, roadSystem, startPos):
         self.roadSystem = roadSystem
         self.pos = Vector(float(startPos.x), float(startPos.y))
         self.oldPos = self.pos
         self.range = 16
-        self.distanceMultiplier = 2.5
+        self.distanceMultiplier = 4
     
     def Act(self):
         self.Move()
