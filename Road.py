@@ -12,7 +12,7 @@ import RoadAgents
 class RoadSystem:
     intersectionGraph = []
     agents = []
-    
+    roadCoverage = 10
     def __init__(self, level, box, hgtMap, lqdMap, origo):
         print("startPos: ", origo)
         self.level = level
@@ -26,7 +26,6 @@ class RoadSystem:
         self.intersectionGraph.append([])
         self.SetRoadMapTile(self.width/2,self.height/2, 0)
         self.multiplier = 4
-        self.roadCoverage = 5
       
     def CreateExtendors(self, nrAgents):
         for i in range(nrAgents):
@@ -71,38 +70,40 @@ class RoadSystem:
     def SetRoadMapTile(self, x, y, data):
         self.graph.getNode(x,y).roadVal = 99
         uf.setBlock(self.level, (35,data), int(self.origo.x + x), self.graph.getNode(x,y).height, int(self.origo.y + y ))
-        self.RadiateFromPlacedRoad(self.roadCoverage, x, y)
+        self.RadiateFromPlacedRoad(x, y)
         #print("Tile and coverage set")
     
-    def RadiateFromPlacedRoad(self, x, y):
+    def RadiateFromPlacedRoad(self, X, Y):
         for i in range(self.roadCoverage):
             layer = i + 1 #does not include the origo position
-            for x0 in range(layer * 2 + 1): #print top of current layer
+            for x0 in range(layer * 2 + 1): #print top row of current layer
                 y = layer
                 x = x0 - layer
-                self.SimpleSpreadRoadCoverage(self.roadCoverage - layer, x, y)
+                self.SimpleSpreadRoadCoverage(self.roadCoverage - layer, x+X, y+Y)
                 
-            for x0 in range(layer * 2 + 1): #print bot of current layer
+                
+            for x0 in range(layer * 2 + 1): #print bot row of current layer
                 y = -layer
                 x = x0 - layer
-                self.SimpleSpreadRoadCoverage(self.roadCoverage - layer, x, y)
+                self.SimpleSpreadRoadCoverage(self.roadCoverage - layer, x+X, y+Y)
                 
-            for y0 in range(layer * 2 + 1): #print right of current layer
+            for y0 in range(layer * 2 + 1): #print right row of current layer
                 y = y0-layer
                 x = layer
-                self.SimpleSpreadRoadCoverage(self.roadCoverage - layer, x, y)
+                self.SimpleSpreadRoadCoverage(self.roadCoverage - layer, x+X, y+Y)
                 
-            for y0 in range(layer * 2 + 1): #print left of current layer
+            for y0 in range(layer * 2 + 1): #print left row of current layer
                 y = y0-layer
                 x = -layer
-                self.SimpleSpreadRoadCoverage(self.roadCoverage - layer, x, y)
+                self.SimpleSpreadRoadCoverage(self.roadCoverage - layer, x+X, y+Y)
             
     
-    def SimpleSpreadRoadCoverage(self, value, X, Y):
-        if X < 0 or Y < 0 or X >= self.width or Y >= self.height:
+    def SimpleSpreadRoadCoverage(self, value, x, y):
+        if x < 0 or y < 0 or x >= self.width or y >= self.height:
             return
-        node = self.graph.getNode(X,Y)
+        node = self.graph.getNode(x,y)
         node.roadVal = max(node.roadVal, value)
+        uf.setBlock(self.level, (35,value%2+4), int(self.origo.x + x), node.height, int(self.origo.y + y ))
     
     def SpreadRoadCoverage(self, value, X, Y):
         if value == 0:
