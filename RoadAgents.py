@@ -163,14 +163,14 @@ class ConnectorAgent:
         self.pos = Vector(float(startPos.x), float(startPos.y))
         self.oldPos = self.pos
         self.range = 16
-        self.distanceMultiplier = 4
+        self.distanceMultiplier = 2 #Larger number leads to less roads
     
     def Act(self):
         self.Move()
-        self.TraceTraveledPath()
+        #self.TraceTraveledPath()
         self.Move()
-        self.TraceTraveledPath()
-        #self.SampleNearRoad()
+        #self.TraceTraveledPath()
+        self.SampleNearRoad()
     
     def Move(self):
         possibleMoves = self.ScanForAdacentroad()
@@ -205,9 +205,9 @@ class ConnectorAgent:
             #temp dir is now of only integers
             if self.OutOfBounds(tempDir):
                 continue
-            if self.pos + tempDir == self.oldPos:
+            if self.oldPos.distance_squared_to(self.pos + tempDir) < 0.1:
                 continue
-            nextNode = self.roadSystem.graph.getNode(int(round(self.pos.x + tempDir.x)),int(round(self.pos.y + tempDir.y)))
+            nextNode = self.roadSystem.graph.getNode(int(self.pos.x + tempDir.x),int(self.pos.y + tempDir.y))
             if nextNode.roadVal == 99:
                 adjNodes.append(self.pos + tempDir)
         return adjNodes
@@ -249,9 +249,9 @@ class ConnectorAgent:
             return
         path = Road.Path(edges, self.roadSystem.width)
         eqldDist = np.sqrt(abs(int(self.pos.x) - checkedNode.x) ** 2 + abs(int(self.pos.y) - checkedNode.y) ** 2)
-        print(eqldDist)
+        #print(eqldDist)
         if path.totalWeight < max(20.0, eqldDist * self.distanceMultiplier):
-            print("existing path close enough")
+            #print("existing path close enough")
             return
         d = Dijkstra.dijkstras(self.roadSystem.graph, posIndex)
         d.buildCompleteMinSpanTree(self.roadSystem.graph)
