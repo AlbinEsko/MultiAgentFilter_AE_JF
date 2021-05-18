@@ -103,42 +103,7 @@ class RoadSystem:
             return
         node = self.graph.getNode(x,y)
         node.roadVal = max(node.roadVal, value)
-        uf.setBlock(self.level, (35,value%2+4), int(self.origo.x + x), node.height, int(self.origo.y + y ))
-    
-    def SpreadRoadCoverage(self, value, X, Y):
-        if value == 0:
-            return
-        if X < 0 or Y < 0 or X >= self.width or Y >= self.height:
-            return
-        
-        topFree = Y+1 < self.height
-        botFree = Y-1 >= 0
-        leftFree = X-1 >= 0
-        rightFree = X+1 < self.width
-        if topFree:
-            self.graph.getNode(X,Y+1).roadVal = max(self.graph.getNode(X,Y+1).roadVal, value)
-            self.SpreadRoadCoverage(value-1,X,Y+1)
-        if botFree:
-            self.graph.getNode(X,Y-1).roadVal = max(self.graph.getNode(X,Y-1).roadVal, value)
-            self.SpreadRoadCoverage(value-1,X, Y-1)
-        if leftFree:
-            self.graph.getNode(X-1,Y).roadVal = max(self.graph.getNode(X-1,Y).roadVal, value)
-            self.SpreadRoadCoverage(value-1,X-1,Y)
-        if rightFree:
-            self.graph.getNode(X+1,Y).roadVal = max(self.graph.getNode(X+1,Y).roadVal, value)
-            self.SpreadRoadCoverage(value-1,X+1, Y)
-        if leftFree and topFree:
-            self.graph.getNode(X-1,Y+1).roadVal = max(self.graph.getNode(X-1,Y+1).roadVal, value)
-            self.SpreadRoadCoverage(value-1,X-1,Y+1)
-        if topFree and rightFree:
-            self.graph.getNode(X+1,Y+1).roadVal = max(self.graph.getNode(X+1,Y+1).roadVal, value)
-            self.SpreadRoadCoverage(value-1,X+1,Y+1)
-        if botFree and rightFree:
-            self.graph.getNode(X+1,Y-1).roadVal = max(self.graph.getNode(X+1,Y-1).roadVal, value)
-            self.SpreadRoadCoverage(value-1,X+1,Y-1)
-        if botFree and leftFree:
-            self.graph.getNode(X-1,Y-1).roadVal = max(self.graph.getNode(X-1,Y-1).roadVal, value)
-            self.SpreadRoadCoverage(value-1,X-1,Y-1)
+        #uf.setBlock(self.level, (35,value%2+4), int(self.origo.x + x), node.height, int(self.origo.y + y ))
     
     def create8WayEdges(self, graph):
         for y in range(graph.height):
