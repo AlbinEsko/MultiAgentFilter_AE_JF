@@ -16,6 +16,7 @@ from pygame.math import Vector2 as Vector
 from Building import House
 from MAF_Utility import Direction
 
+
 inputs = (
     ("test1", "label"),
 )
@@ -25,10 +26,11 @@ def perform(level, box, options):
     print("Performing")
     hgtMap, liquidmap = createHeightMap(level, box)
     print("height map and liquid map made")
-    print(hgtMap)
+    # print(hgtMap)
 
     house = House(box,level,hgtMap,Direction.EAST)
     house.generate(1)
+
 
     #markRegions(level, box, hgtMap, liquidmap)
     boxOrigo = Vector(box.minx, box.minz)
