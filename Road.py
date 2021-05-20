@@ -149,6 +149,8 @@ class Path:
             self.roadTiles.append((e.to%width, e.to/width))
             self.totalWeight += e.weight
             self.largestDiff = max(self.largestDiff, e.weight)
+        firstEdge = data.pop()
+        self.roadTiles.append((firstEdge.frm%width, firstEdge.frm/width))
             
     def getLastCoord(self):
         if self.isEmpty():

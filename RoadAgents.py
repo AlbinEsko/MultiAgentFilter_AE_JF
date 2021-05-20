@@ -162,14 +162,12 @@ class ConnectorAgent:
         self.roadSystem = roadSystem
         self.pos = Vector(float(startPos.x), float(startPos.y))
         self.oldPos = self.pos
-        self.range = 16
-        self.distanceMultiplier = 2 #Larger number leads to less roads
+        self.range = 64
+        self.distanceMultiplier = 3.5 #Larger number leads to less roads
+        self.minExistingDistForConnection = 30
     
     def Act(self):
         self.Move()
-        #self.TraceTraveledPath()
-        self.Move()
-        #self.TraceTraveledPath()
         self.SampleNearRoad()
     
     def Move(self):
@@ -250,7 +248,7 @@ class ConnectorAgent:
         path = Road.Path(edges, self.roadSystem.width)
         eqldDist = np.sqrt(abs(int(self.pos.x) - checkedNode.x) ** 2 + abs(int(self.pos.y) - checkedNode.y) ** 2)
         #print(eqldDist)
-        if path.totalWeight < max(20.0, eqldDist * self.distanceMultiplier):
+        if path.totalWeight < max(self.minExistingDistForConnection, eqldDist * self.distanceMultiplier):
             #print("existing path close enough")
             return
         d = Dijkstra.dijkstras(self.roadSystem.graph, posIndex)

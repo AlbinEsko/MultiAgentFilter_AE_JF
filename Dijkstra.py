@@ -5,7 +5,7 @@ import Graph
 import BinaryHeap
 class dijkstras:
     def __init__(self, graph, start):
-        self.edgeTo = [None for i in range(graph.nrNodes + 1)] #np.empty(graph.get_NrNodes(), None)
+        self.edgeTo = [None for i in range(graph.nrNodes + 1)]
         self.distTo = np.full(graph.nrNodes + 1, sys.maxint)
         self.pq = BinaryHeap.IndexMinPQ(graph.nrNodes +1, float)
         self.distTo[start] = 0
