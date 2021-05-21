@@ -25,7 +25,7 @@ class ExtendorAgent:
         
     def Act(self):
         if not self.Move():
-            print("same tile")
+            #print("same tile")
             return
         #print("new tile", int(self.pos.x), int(self.pos.y))
         self.Analyze()

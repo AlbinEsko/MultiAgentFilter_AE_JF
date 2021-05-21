@@ -65,6 +65,7 @@ class Node:
         self.height = height
         self.liquid = liquid
         self.roadVal = 0
+        self.plotted = False
         
     def addEdge(self, edge):
         self.adjacent.append(edge)
