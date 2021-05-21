@@ -10,11 +10,9 @@ import utilityFunctions as uf
 import RoadAgents
 
 class RoadSystem:
-    intersectionGraph = []
     agents = []
     roadCoverage = 10
     def __init__(self, level, box, hgtMap, lqdMap, origo):
-        print("startPos: ", origo)
         self.level = level
         self.origo = origo
         self.width = box.width
@@ -23,10 +21,21 @@ class RoadSystem:
         self.liquidMap = lqdMap
         self.graph = Graph.Graph(box.width, box.length,hgtMap,lqdMap)
         self.create8WayEdges(self.graph)
-        self.intersectionGraph.append([])
-        self.SetRoadMapTile(self.width/2,self.height/2, 0)
+        startCoords = self.FindStart()
+        print("startPos: ", Vector(startCoords[0], startCoords[1]) + origo)
+        self.SetRoadMapTile(startCoords[0],startCoords[1], 0)
         self.multiplier = 4
       
+        
+    def FindStart(self):
+        regions = Graph.newConnectivity(self.graph)
+        largestRegion = []
+        for r in regions:
+            if len(r) > len(largestRegion):
+                largestRegion = r
+                
+        return Random.choice(largestRegion)
+    
     def CreateExtendors(self, nrAgents):
         for i in range(nrAgents):
             self.agents.append(RoadAgents.ExtendorAgent(self, Vector(len(self.heightMap[0])/2, len(self.heightMap)/2)))

@@ -243,7 +243,7 @@ class ConnectorAgent:
         d.buildOnRoadMinSpanTree(self.roadSystem.graph)
         edges = d.pathTo(posIndex)
         if edges == None:
-            print("no path found")
+            #print("no path found")
             return
         path = Road.Path(edges, self.roadSystem.width)
         eqldDist = np.sqrt(abs(int(self.pos.x) - checkedNode.x) ** 2 + abs(int(self.pos.y) - checkedNode.y) ** 2)

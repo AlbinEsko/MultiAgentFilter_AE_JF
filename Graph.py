@@ -12,7 +12,7 @@ class Graph:
             for x in range(w):
                 self.graph.append(Node(x+y*w, x, y, hgtMap[y][x], lqdMap[y][x]))
         
-    def __getitem__(self,index):#overloaded operator[]
+    def __getitem__(self, index):#overloaded operator[]
         return self.graph[index]
     
     def getNode(self,x,y):
@@ -105,8 +105,8 @@ def getEarliestUnvisitedNode(NrNodes, visited):
             if(not visited[n]):
                 return n
             
-'''
-def newConnectivity(graph, heightMap, diffThresh = 3.0):   
+
+def newConnectivity(graph, diffThresh = 3.0):   
     regions = []
     visited = [False for i in range(graph.get_NrNodes())]
     region = []
@@ -117,21 +117,22 @@ def newConnectivity(graph, heightMap, diffThresh = 3.0):
         stack.append(start)
         visited[start] = True #set start pos as visited
         while(len(stack) != 0):
-            currentNode = stack.pop()
-            regionAvgHeight = (regionAvgHeight*(len(region)) + heightMap[currentNode / graph.width][currentNode % graph.width]) / (len(region)+1)
-            region.append([currentNode % graph.width, currentNode / graph.width])
-            for edge in graph[currentNode]:
-                nextDiff = heightMap[edge.to / graph.width][edge.to % graph.width] - regionAvgHeight
+            currentNode = graph[stack.pop()]
+            regionAvgHeight = (regionAvgHeight * (len(region)) + currentNode.height) / (len(region)+1)
+            region.append([currentNode.x, currentNode.y])
+            for edge in currentNode.adjacent:
+                nextNode = graph.getNode(edge.to % graph.width, edge.to / graph.width)
+                nextDiff = nextNode.height - regionAvgHeight
                 if(abs(nextDiff) > diffThresh):
                     continue
-                if(not visited[edge.to]):
-                    visited[edge.to] = True
-                    stack.append(edge.to)
+                if(not visited[nextNode.index]):
+                    visited[nextNode.index] = True
+                    stack.append(nextNode.index)
         regions.append(region)
         region = []
         regionAvgHeight = 0.0
     return regions
-
+'''
 def newLiquidMap(graph, liquidMap, diffThresh = 3.0):   
     regions = []
     visited = [False for i in range(graph.get_NrNodes())]
@@ -277,11 +278,11 @@ if __name__ == "__main__":
     array = [[random.choice((0,1,2,3,4,5,6,7,8,9)) for i in range(W)] for j in range(H)]
     graph = Graph(W, H, array, array)
     print('created')
-    #graph.createOrthogonalGraphFrom2D(array)
-    #regions = newConnectivity(graph, array)
+    graph.createOrthogonalGraphFrom2D()
+    regions = newConnectivity(graph)
     #print(connectedNodes)
     #tot = 0
-    #for r in regions:
-        #print(len(r))
+    for r in regions:
+        print(len(r))
         #tot += len(r)
     #print(tot)
