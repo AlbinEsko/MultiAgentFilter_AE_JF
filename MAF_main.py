@@ -28,8 +28,8 @@ def perform(level, box, options):
     print("height map and liquid map made")
     # print(hgtMap)
 
-    house = House(box,level,hgtMap,Direction.EAST)
-    house.generate(1)
+    house = House(box,box,level,hgtMap,Direction.EAST)
+    house.generate()
 
 
     #markRegions(level, box, hgtMap, liquidmap)

@@ -10,9 +10,10 @@ _expansion = namedtuple("_expansion", ("n", "e", "s", "w"))
 
 
 class Building(object):
-    def __init__(self, yard, level, heightmap, dir_to_road):
+    def __init__(self, box, yard, level, heightmap, dir_to_road):
         # type: (BoundingBox, MCLevel, List[List[int]], Direction) -> None
         print("Building")
+        self.box = box
         self.yard = yard
         self.level = level
         self.heightmap = heightmap
@@ -23,20 +24,27 @@ class Building(object):
         self.windows = []
         self.walls = []
         self.floorplans = []
-        self.sizexmin = 5
-        self.sizexmax = 10
-        self.sizezmin = 5
-        self.sizezmax = 10
+        self.sizexmin = 6
+        self.sizexmax = 12
+        self.sizezmin = 6
+        self.sizezmax = 12
         self.sizey = 5
 
 
-class House(Building):
-    def __init__(self, yard, level, heightmap, dir_to_road):
-        Building.__init__(self, yard, level, heightmap, dir_to_road)
+def randomalowed(lower, max, limit):
+    r = random.randrange(lower,max)
+    if r > limit:
+        r = limit
+    return r
 
-    def generate(self, nr_of_modules):
+
+class House(Building):
+    def __init__(self, box, yard, level, heightmap, dir_to_road):
+        Building.__init__(self, box, yard, level, heightmap, dir_to_road)
+
+    def generate(self):
         # type: (int) -> House
-        self.create_modules(nr_of_modules)
+        self.create_modules()
         self.create_floor()
         self.create_walls()
 
@@ -60,25 +68,28 @@ class House(Building):
                 if doors_available > 0:
                     if wall.wall_side.value is self.dir_to_road.value:
                         free_slots = self.get_free_slots(wall.slots)
-                        print("free slot" + str(free_slots))
+                         # print("free slot" + str(free_slots))
                         wall.build_door(random.choice(free_slots))
                         doors_available -= 1
 
         for module in range(len(self.modules)):
             for wall in self.walls[module * 4:module * 4 + 4]:
-                while wall.resources > 0:
+                tries = 5
+                while wall.resources > 0 and tries > 0:
                     free_slots = self.get_free_slots(wall.slots)
                     if len(free_slots) == 0:
                         break
-                    wall.build_window(random.choice(free_slots), random.randint(2, 4))
+                    if not wall.build_window(random.choice(free_slots), random.randint(2, 4)):
+                        tries -= 1
 
         self.create_floorplan()
-        self.printfloorplans()
+        # self.printfloorplans()
         self.populatefloorplans()
         self.buildfloorplans()
+        # self.printfloorplans()
 
-        for wall in self.walls:
-            print(wall.slots)
+        # for wall in self.walls:
+        #     print(wall.slots)
 
     def printfloorplans(self):
         print("Floorplan:")
@@ -87,46 +98,59 @@ class House(Building):
             for i in plan:
                 print(i)
 
-    def create_modules(self, nr_of_modules):
+    def create_modules(self):
         # type: (int) -> None
-        ox = self.yard.origin.x + 1
-        oz = self.yard.origin.z + 1
-        oy = self.heightmap[1][1] + 1
-        # print( "oy" + str(oy))
-        sx = 10
+
+
+
+        # ox = self.yard.origin.x + 1
+        # oz = self.yard.origin.z + 1
+        # oy = self.heightmap[oz - self.box.origin.z][ox - self.box.origin.x] + 1
+
+        print()
+        # print(self.yard.origin.x + 1)
+        # print(ox - self.box.origin.x)
+        print()
+
+        # sxmax = self.sizexmax if self.sizexmax < self.yard.size.x else self.yard.size.x
+        # szmax = self.sizezmax if self.sizezmax < self.yard.size.z else self.yard.size.z
+        # sx = random.randrange(self.sizexmin,self.yard.size.x)
+        print("values")
+        print(self.sizexmin)
+        print(self.sizexmax)
+        print(self.yard.size.x)
+
+        # sx = random.randrange(6,12)
+        sx = randomalowed(self.sizexmin,self.sizexmax,self.yard.size.x)
+        # sx = 10
         sy = self.sizey
-        sz = 7
+        sz =randomalowed(self.sizezmin,self.sizezmax,self.yard.size.z)
+        # sz = 6
+        print("values")
+        print("sx = " + str(sx))
+        print("sz = " + str(sz))
+
+        x = self.yard.size.x - sx
+        z = self.yard.size.z - sz
+
+        ox = self.yard.origin.x + random.randrange(0,x)
+        oz = self.yard.origin.z + random.randrange(0,z)
+        oy = self.heightmap[oz - self.box.origin.z][ox - self.box.origin.x] + 1
+
+
+
         box = BoundingBox([ox, oy, oz], [sx, sy, sz])
         module = Module(self.yard, box, self.level, self)
-        print(box)
+        # print(box)
+        self.fill_box(BoundingBox(box,[sx,20,sz]),0) # clearing from wood and leaves
         self.modules.append(module)
+
         self.modules.append(module.addfloor())
 
         # r = random.random()
-        # if r < 0.3:
+        # if r < 0.3 and self.sizeminx >= 6 and self.sizeminz >=6:
         #     self.modules.append(module.addfloor())
 
-        # for x in range(nr_of_modules):
-        #     if x == 1:
-        #         originx = random.randrange(0, 5)
-        #         originz = random.randrange(0, 5)
-        #     else:
-        #         r = random.random()
-        #         if r < 0.50:
-        #             originx = self.modules[x - 1].size.x
-        #             originz = random.randrange(0, 5)
-        #         else:
-        #             originx = random.randrange(0, 5)
-        #             originz = self.modules[x - 1].size.z
-        #
-        #     originy = self.heightmap[originz][originx]  # this needs to be checked, might need to be inverted.
-        #     origin = [originx, originy, originz]  # lowest x,y,z of box
-        #     sizex = random.randrange(self.sizexmin, self.sizexmax)
-        #     sizey = self.sizey
-        #     sizez = random.randrange(self.sizezmin, self.sizezmax)
-        #     size = [sizex, sizey, sizez]
-        #     module = BoundingBox(origin, size)
-        #     self.modules.append(BoundingBox)
 
     def create_walls(self):
         """For each module in building create wall for each side"""
@@ -355,7 +379,7 @@ class House(Building):
                     for z in range(len(wall.slots)):
                         floorplan[z + 1][0] = self.getsymbol(wall.slots[z])
 
-            floorplan[1][1] = "S"
+            # floorplan[2][5] = "CW"
             counter += 1
             self.floorplans.append(floorplan)
 
@@ -369,24 +393,68 @@ class House(Building):
         return param
 
     def populatefloorplans(self):
+
+        if len(self.modules) >1:
+            self.placestairs(self.floorplans, self.walls[0:4])
+
         pass
 
     def buildfloorplans(self):
-        print("Building floorplans")
+        # print("Building floorplans")
         module = 0
         for plan in self.floorplans:
             for z in range(len(plan)):
-                print(plan[z])
+                # print(plan[z])
                 for x in range(len(plan[z])):
                     self.buildfurniture(self.modules[module],plan[z-1][x-1],x,z)
             module += 1
 
     def buildfurniture(self, module, furniture, x, z):
-        print("Building furniture :" +str(furniture))
-        xo = module.box.origin.x -1
-        zo = module.box.origin.z -1
-        if furniture == "S":
-            fur.Bookshelf(self.level,xo+x,module.box.origin.y,zo+z)
+        # print("Building furniture :" + str(furniture))
+
+        xo = module.box.origin.x - 1 +x
+        zo = module.box.origin.z - 1 +z
+        y = module.box.origin.y
+        if furniture == "S":  # bookShelf
+            fur.Bookshelf(self.level, xo, y, zo)
+        elif furniture[0] == "B":
+            dir = self.getrotationint(furniture[1])
+            fur.Bed(self.level, xo, y, zo, dir)
+        elif furniture[0:2] =="ST":  # Stairs
+            dir = self.getrotationint(furniture[2])
+            height = int(furniture[3])
+            fur. Stair(self.level,xo,y,zo,dir,height)
+        elif furniture[0] == "F":  # Furnace
+            dir = self.getrotationint(furniture[1])
+            fur.Furnace(self.level,xo,y,zo,dir)
+        elif furniture[0:2] == "CO":  # Corner
+            fur.Corner(self.level,xo,y,zo, furniture[2])
+        elif furniture[0] == "C":  # Chest
+            dir = self.getrotationint(furniture[1])
+            fur.Chest(self.level,xo,y,zo,dir)
+
+
+
+    def getrotationint(self,char):
+        if char == "N":
+            return 1
+        elif char == "E":
+            return 2
+        elif char == "S":
+            return 3
+        elif char == "W":
+            return 4
+        return 0
+
+    def placestairs(self,floorplan,walls):
+
+        s = Stairs(floorplan[0],walls)
+        stairs = s.getrandomstairs()
+        for coord in stairs:
+            floorplan[0][coord.z][coord.x] = coord.container
+            floorplan[1][coord.z][coord.x] = "N"
+
+
 
 
 
@@ -409,70 +477,6 @@ class Module:
         self.building = building
         self.istoplevel = True
         self.isgroundfloor = True
-        # self.expansion = self.getexpansionlimit(Direction.NONE)
-
-    def getexpansionlimit(self, direction):
-        # type: (Direction) -> [int]
-        """Not working looking outside of index in heightmap"""
-        output = []
-        offset = self.box.origin - self.yard.origin
-        # offsetz = self.box.origin - self.yard.origin
-        height = self.box.origin.y
-
-        if direction == Direction.NONE or direction == Direction.NORTH:
-            dist = abs(self.yard.origin.z - self.box.origin.z)
-            if dist != 0:
-                # perpendicular to direction
-                for perpendicular in range(self.box.size.x):
-                    for parallel in range(dist):
-                        z = (self.box.origin.z - 1) - parallel
-                        x = self.box.origin.x + perpendicular
-                        print(z, x)
-                        if height != self.building.heightmap[z][x] and dist < parallel:
-                            dist = parallel
-                            break
-            output.append(dist)
-
-        if direction == Direction.NONE or direction == Direction.EAST:
-            dist = abs((self.yard.origin.x + self.yard.size.x) - (self.box.origin.x + self.box.size.x))
-            if dist != 0:
-                for perpendicular in range(self.box.size.z):
-                    for parallel in range(dist):
-                        z = self.origin.z + perpendicular
-                        x = (self.box.origin.x + self.box.size.x + 1) + parallel
-                        if height != self.building.heightmap[z][x] and dist < parallel:
-                            dist = parallel
-                            break
-
-            output.append(dist)
-
-        if direction == Direction.NONE or direction == Direction.SOUTH:
-            dist = abs((self.box.origin.z + self.box.size.z) - (self.yard.origin.z + self.yard.size.z))
-            if dist != 0:
-                for perpendicular in range(self.box.size.x):
-                    for parallel in range(dist):
-                        z = (self.box.origin.z + self.box.size.z + 1) + parallel
-                        x = self.box.origin.x + perpendicular
-                        if height != self.building.heightmap[z][x] and dist < parallel:
-                            dist = parallel
-                            break
-
-            output.append(dist)
-
-        if direction == Direction.NONE or direction == Direction.WEST:
-            dist = abs((self.yard.origin.x) - (self.box.origin.x))
-            if dist != 0:
-                for perpendicular in range(self.box.size.z):
-                    for parallel in range(dist):
-                        z = self.origin.z + perpendicular
-                        x = (self.box.origin.x + self.box.size.x - 1) - parallel
-                        if height != self.building.heightmap[z][x] and dist < parallel:
-                            dist = parallel
-                            break
-
-            output.append(dist)
-
-        return output
 
     def getbiggestdimension(self):
         """Returns whether the x or z axis are the biggest"""
@@ -520,6 +524,7 @@ class Wall:
         uf.setBlock(self.building.level, (block, data1), x, y, z)
         uf.setBlock(self.building.level, (block, data2), x, y - 1, z)
         self.slots[slot] = "D"
+        self.door.append(slot)
         # self.resources -= 1
 
     def build_window(self, slot, width, height=2, block=20):
@@ -528,10 +533,10 @@ class Wall:
             try:
                 if self.slots[slot + x] is not None:
                     # print("Trying to build on already build slot, exiting")
-                    return
+                    return False
             except IndexError:
                 # print("Trying outside of slots")
-                return
+                return False
         y = self.box.origin.y + height
         x_forward = True
         if self.wall_side == Direction.NORTH or self.wall_side == Direction.SOUTH:
@@ -551,6 +556,7 @@ class Wall:
                     uf.setBlock(self.building.level, (block, 0), x, y - j, z + i)
 
         self.resources -= 1
+        return True
 
     def get_length(self):
         """Returns the length of the wall"""
@@ -567,3 +573,170 @@ class Wall:
             return 3
         else:  # self.wall_side == Direction.WEST:
             return 0
+    def containsdoor(self):
+        if len(self.door) > 0:
+            return True
+        return False
+
+
+class Stairs:
+    def __init__(self, floorplan, walls):
+        self.floorplan = floorplan
+        self.available_stairs = []
+        self.createstairs(walls)
+
+
+
+
+    def createstairs(self, walls):
+        # type: (None,Module) -> None
+        for wall in range(len(walls)):
+            # print(walls[wall].slots)
+            print("This wall contains a door: "+ str(walls[wall].containsdoor()))
+            if walls[wall].containsdoor():
+                # print("Stairs left before " + str(len(self.available_stairs)))
+                w = walls[wall]
+                length = len(walls[wall].slots)
+                slot = w.door[0]
+                # print()
+                print("slot is: " + str(slot) + " Lenght is: " + str(length))
+                if slot <= 1 or slot >= length-1 or length <= 5:
+                    # print("Removing incompatible stairs")
+                    if wall == 0:
+                        self.addcornerstairs("SE")
+                        self.addcornerstairs("SW")
+                    elif wall == 1:
+                        print("Removing incompatible stairs")
+                        self.addcornerstairs("NW")
+                        self.addcornerstairs("SW")
+                    elif wall == 2:
+                        self.addcornerstairs("NW")
+                        self.addcornerstairs("NE")
+                    elif wall == 3:
+                        self.addcornerstairs("NE")
+                        self.addcornerstairs("SE")
+                else:
+                    self.addcornerstairs("NW")
+                    self.addcornerstairs("NE")
+                    self.addcornerstairs("SE")
+                    self.addcornerstairs("SW")
+
+                # print("Wall " + str(wall) + " contains a door")
+                # print("Stairs left after " + str(len(self.available_stairs)))
+
+
+    def addcornerstairs(self,allowed_corners):
+        if "NW" in allowed_corners:
+            temp= [Coordinate(1,3),
+                   Coordinate(1,2),
+                   Coordinate(1,1),
+                   Coordinate(2,1),
+                   Coordinate(3,1),
+                   Coordinate(4,1)]
+            forward = []
+            forward.extend([temp[0].setcontainer("STN0"),
+                           temp[1].setcontainer("STN1"),
+                           temp[2].setcontainer("CO2"),
+                           temp[3].setcontainer("STE2"),
+                           temp[4].setcontainer("STE3"),
+                           temp[5].setcontainer("STE4")])
+            backward = []
+            backward.extend([temp[5].setcontainer("STW0"),
+                           temp[4].setcontainer("STW1"),
+                           temp[3].setcontainer("STW2"),
+                           temp[2].setcontainer("CO3"),
+                           temp[1].setcontainer("STS3"),
+                           temp[0].setcontainer("STS4")])
+            self.available_stairs.append(forward)
+            self.available_stairs.append(backward)
+        if "NE" in allowed_corners:
+            x = len(self.floorplan[0])-2
+            temp = [Coordinate(x-2,1),
+                    Coordinate(x-1, 1),
+                    Coordinate(x, 1),
+                    Coordinate(x, 2),
+                    Coordinate(x, 3),
+                    Coordinate(x, 4)]
+            forward = []
+            forward.extend([temp[0].setcontainer("STE0"),
+                            temp[1].setcontainer("STE1"),
+                            temp[2].setcontainer("CO2"),
+                            temp[3].setcontainer("STS2"),
+                            temp[4].setcontainer("STS3"),
+                            temp[5].setcontainer("STS4")])
+            backward = []
+            backward.extend([temp[5].setcontainer("STN0"),
+                             temp[4].setcontainer("STN1"),
+                             temp[3].setcontainer("STN2"),
+                             temp[2].setcontainer("CO3"),
+                             temp[1].setcontainer("STW3"),
+                             temp[0].setcontainer("STW4")])
+            self.available_stairs.append(forward)
+            self.available_stairs.append(backward)
+        if "SE" in allowed_corners:
+            x = len(self.floorplan[0]) - 2
+            z = len(self.floorplan) - 2
+            temp = [Coordinate(x, z-2),
+                    Coordinate(x, z-1),
+                    Coordinate(x, z),
+                    Coordinate(x-1, z),
+                    Coordinate(x-2, z),
+                    Coordinate(x-3, z)]
+            forward = []
+            forward.extend([temp[0].setcontainer("STS0"),
+                            temp[1].setcontainer("STS1"),
+                            temp[2].setcontainer("CO2"),
+                            temp[3].setcontainer("STW2"),
+                            temp[4].setcontainer("STW3"),
+                            temp[5].setcontainer("STW4")])
+            backward = []
+            backward.extend([temp[5].setcontainer("STE0"),
+                             temp[4].setcontainer("STE1"),
+                             temp[3].setcontainer("STE2"),
+                             temp[2].setcontainer("CO3"),
+                             temp[1].setcontainer("STN3"),
+                             temp[0].setcontainer("STN4")])
+            self.available_stairs.append(forward)
+            self.available_stairs.append(backward)
+        if "SW" in allowed_corners:
+            z = len(self.floorplan) - 2
+            temp = [Coordinate(3, z),
+                    Coordinate(2, z),
+                    Coordinate(1, z),
+                    Coordinate(1, z-1),
+                    Coordinate(1, z-2),
+                    Coordinate(1, z-3)]
+            forward = []
+            forward.extend([temp[0].setcontainer("STW0"),
+                            temp[1].setcontainer("STW1"),
+                            temp[2].setcontainer("CO2"),
+                            temp[3].setcontainer("STN2"),
+                            temp[4].setcontainer("STN3"),
+                            temp[5].setcontainer("STN4")])
+            backward = []
+            backward.extend([temp[5].setcontainer("STS0"),
+                             temp[4].setcontainer("STS1"),
+                             temp[3].setcontainer("STS2"),
+                             temp[2].setcontainer("CO3"),
+                             temp[1].setcontainer("STE3"),
+                             temp[0].setcontainer("STE4")])
+            self.available_stairs.append(forward)
+            self.available_stairs.append(backward)
+
+
+    def getrandomstairs(self):
+        r = random.randrange(0,len(self.available_stairs))
+        # print("Chosen stair" + str(r))
+        return self.available_stairs[r]
+
+class Coordinate:
+    def __init__(self,x,z,container = None):
+        self.x = x
+        self.z = z
+        self.container = container
+
+
+    def setcontainer(self,container):
+        self.container = container
+
+        return Coordinate(self.x,self.z,container)
