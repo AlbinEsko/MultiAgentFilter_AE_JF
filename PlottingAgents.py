@@ -26,9 +26,8 @@ class PlotAgent:
         
     def Act(self):
         if not self.Move():
-            #print("same tile")
             return
-        #print("new tile", int(self.pos.x), int(self.pos.y))
+        #self.TraceTraveledPath()
         self.Evaluate()
 
     '''Wander around 
@@ -55,11 +54,10 @@ class PlotAgent:
         return False
     
     def ConvertToIntCoords(self, p):
-        blockPos = Vector(int(p.x),int(p.y))
-        return blockPos
+        return Vector(int(p.x),int(p.y))
     
     def TraceTraveledPath(self):
-        uf.setBlock(self.roadSystem.level, (35,0), int(self.roadSystem.origo.x + self.pos.x), self.roadSystem.heightMap[int(self.pos.y)][int(self.pos.x)], int(self.roadSystem.origo.y + self.pos.y ))
+        uf.setBlock(self.roadSystem.level, (35,10), int(self.roadSystem.origo.x + self.pos.x), self.roadSystem.heightMap[int(self.pos.y)][int(self.pos.x)], int(self.roadSystem.origo.y + self.pos.y ))
     
     def Evaluate(self):
         posIndex = int(self.pos.x) + int(self.pos.y) * self.roadSystem.width
@@ -68,7 +66,7 @@ class PlotAgent:
             return
         roadConnection = self.FindClosestRoad(currentNode)
         evaluatedPlot = Plot(roadConnection.height, Vector(roadConnection.x, roadConnection.y))
-        self.FillPlot(evaluatedPlot)
+        #self.FillPlot(evaluatedPlot)
     
     '''Analyze current position for suitable plot'''
     def Analyze(self, currentNode):
@@ -79,12 +77,12 @@ class PlotAgent:
         node = currentNode
         while node.roadVal < self.roadSystem.roadCoverage:
              node = self.CheckSurroundingTiles(node)
-             
+             uf.setBlock(self.roadSystem.level, (35,11), int(self.roadSystem.origo.x) + node.x, node.height, int(self.roadSystem.origo.y) + node.y)
         return node
     
     def CheckSurroundingTiles(self, node):
         largestRoadVal = 0
-        for x in (-1, 0, 1): #print top row of current layer
+        for x in (-1, 0, 1):
             for y in (-1, 0, 1):
                 if x == 0 and y == 0:
                     continue
@@ -95,6 +93,12 @@ class PlotAgent:
         return closestNode
     
     def FillPlot(self, plot):
+        maxX = 10
+        maxY = 10
+        for x in (-1, 0, 1):
+            for y in (-1, 0, 1):
+                if x == 0 and y == 0:
+                    continue
         return
     
     

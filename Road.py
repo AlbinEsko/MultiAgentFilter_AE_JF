@@ -8,6 +8,7 @@ import Graph as Graph
 import Dijkstra
 import utilityFunctions as uf
 import RoadAgents
+import PlottingAgents
 
 class RoadSystem:
     agents = []
@@ -24,7 +25,9 @@ class RoadSystem:
         startCoords = self.FindStart()
         print("startPos: ", Vector(startCoords[0], startCoords[1]) + origo)
         self.SetRoadMapTile(startCoords[0],startCoords[1], 0)
+        self.startPos = Vector(startCoords[0], startCoords[1])
         self.multiplier = 4
+        self.plotAgents = []
       
         
     def FindStart(self):
@@ -38,18 +41,26 @@ class RoadSystem:
     
     def CreateExtendors(self, nrAgents):
         for i in range(nrAgents):
-            self.agents.append(RoadAgents.ExtendorAgent(self, Vector(len(self.heightMap[0])/2, len(self.heightMap)/2)))
+            self.agents.append(RoadAgents.ExtendorAgent(self, self.startPos))
         #print("Extendors Created")
             
     def CreateConnectors(self, nrAgents):
         for i in range(nrAgents):
-            self.agents.append(RoadAgents.ConnectorAgent(self, Vector(len(self.heightMap[0])/2, len(self.heightMap)/2)))
-        
+            self.agents.append(RoadAgents.ConnectorAgent(self, self.startPos))
+    
+    def CreatePloters(self, nrAgents):
+        for i in range(nrAgents):
+            self.plotAgents.append(PlottingAgents.PlotAgent(self, self.startPos))
+    
     def UpdateAgents(self):
         for a in self.agents:
             a.Act()
             #print(a, "acted")
-        
+    
+    def UpdatePlotAgents(self):
+        for a in self.plotAgents:
+            a.Act()
+    
     def Analyze(self, suggestion, data):
         start = suggestion.getFirstCoord()
         end = suggestion.getLastCoord()
