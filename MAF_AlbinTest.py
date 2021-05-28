@@ -30,8 +30,9 @@ def perform(level, box, options):
     roads.CreateConnectors(50)
     for r in range(100):
         roads.UpdateAgents()
-    roads.CreatePloters(1)
+    roads.CreatePloters(5)
     for r in range(100):
+        #print(r,"/100")
         roads.UpdatePlotAgents()
     
     

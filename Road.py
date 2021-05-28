@@ -28,6 +28,7 @@ class RoadSystem:
         self.startPos = Vector(startCoords[0], startCoords[1])
         self.multiplier = 4
         self.plotAgents = []
+        self.plots = []
       
         
     def FindStart(self):
@@ -60,6 +61,10 @@ class RoadSystem:
     def UpdatePlotAgents(self):
         for a in self.plotAgents:
             a.Act()
+        c = 0
+        for p in self.plots:
+            p.PrintPlot(self.level, self.origo, c + 6)
+            c = (c+1) % 10
     
     def Analyze(self, suggestion, data):
         start = suggestion.getFirstCoord()
