@@ -105,3 +105,9 @@ class Chest:
         elif direction == 4:  # WEST
             data = 4
         uf.setBlock(level, (block, data), x, y, z)
+
+class Fence:
+    def __init__(self,level,x,y,z):
+        block = 85
+        data = 0
+        uf.setBlock(level,(block,data),x,y,z)

@@ -5,8 +5,9 @@ from MAF_Utility import Direction
 import utilityFunctions as uf
 from pymclevel.box import Vector
 import Furniture as fur
+import FurnitureAgent as furagent
 
-_expansion = namedtuple("_expansion", ("n", "e", "s", "w"))
+
 
 
 class Building(object):
@@ -85,8 +86,15 @@ class House(Building):
         self.create_floorplan()
         # self.printfloorplans()
         self.populatefloorplans()
+        agent = furagent.FurnitureAgent(self.floorplans)
+        agent.Act()
         self.buildfloorplans()
-        # self.printfloorplans()
+        self.printfloorplans()
+
+
+
+
+
 
         # for wall in self.walls:
         #     print(wall.slots)
@@ -100,25 +108,12 @@ class House(Building):
 
     def create_modules(self):
         # type: (int) -> None
-
-
-
-        # ox = self.yard.origin.x + 1
-        # oz = self.yard.origin.z + 1
-        # oy = self.heightmap[oz - self.box.origin.z][ox - self.box.origin.x] + 1
-
-        print()
-        # print(self.yard.origin.x + 1)
-        # print(ox - self.box.origin.x)
-        print()
-
-        # sxmax = self.sizexmax if self.sizexmax < self.yard.size.x else self.yard.size.x
-        # szmax = self.sizezmax if self.sizezmax < self.yard.size.z else self.yard.size.z
-        # sx = random.randrange(self.sizexmin,self.yard.size.x)
-        print("values")
-        print(self.sizexmin)
-        print(self.sizexmax)
-        print(self.yard.size.x)
+        # print()
+        # print()
+        # print("values")
+        # print(self.sizexmin)
+        # print(self.sizexmax)
+        # print(self.yard.size.x)
 
         # sx = random.randrange(6,12)
         sx = randomalowed(self.sizexmin,self.sizexmax,self.yard.size.x)
@@ -126,9 +121,9 @@ class House(Building):
         sy = self.sizey
         sz =randomalowed(self.sizezmin,self.sizezmax,self.yard.size.z)
         # sz = 6
-        print("values")
-        print("sx = " + str(sx))
-        print("sz = " + str(sz))
+        # print("values")
+        # print("sx = " + str(sx))
+        # print("sz = " + str(sz))
 
         x = self.yard.size.x - sx
         z = self.yard.size.z - sz
@@ -148,7 +143,7 @@ class House(Building):
         self.modules.append(module.addfloor())
 
         # r = random.random()
-        # if r < 0.3 and self.sizeminx >= 6 and self.sizeminz >=6:
+        # if r < 0.3 and self.sizexmin >= 6 and self.sizezmin >=6:
         #     self.modules.append(module.addfloor())
 
 
@@ -423,7 +418,9 @@ class House(Building):
         elif furniture[0:2] =="ST":  # Stairs
             dir = self.getrotationint(furniture[2])
             height = int(furniture[3])
-            fur. Stair(self.level,xo,y,zo,dir,height)
+            fur.Stair(self.level,xo,y,zo,dir,height)
+        elif furniture == "FN": #Fence
+            fur.Fence(self.level,xo,y,zo)
         elif furniture[0] == "F":  # Furnace
             dir = self.getrotationint(furniture[1])
             fur.Furnace(self.level,xo,y,zo,dir)
@@ -450,9 +447,15 @@ class House(Building):
 
         s = Stairs(floorplan[0],walls)
         stairs = s.getrandomstairs()
+        counter = 0
         for coord in stairs:
             floorplan[0][coord.z][coord.x] = coord.container
-            floorplan[1][coord.z][coord.x] = "N"
+            if counter >0:
+                floorplan[1][coord.z][coord.x] = "N"
+            counter+=1
+
+        last = stairs[-1]
+        floorplan[1][last.z][last.x] = "E"
 
 
 

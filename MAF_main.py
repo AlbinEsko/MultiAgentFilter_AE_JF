@@ -15,6 +15,7 @@ from Building import Module,Building, House
 from pygame.math import Vector2 as Vector
 from Building import House
 from MAF_Utility import Direction
+import random as random
 
 
 inputs = (
@@ -27,8 +28,8 @@ def perform(level, box, options):
     hgtMap, liquidmap = createHeightMap(level, box)
     print("height map and liquid map made")
     # print(hgtMap)
-
-    house = House(box,box,level,hgtMap,Direction.EAST)
+    enums = ([Direction.NORTH,Direction.EAST,Direction.SOUTH,Direction.EAST])
+    house = House(box,box,level,hgtMap,random.choice(list(enums)))
     house.generate()
 
 
