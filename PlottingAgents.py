@@ -15,6 +15,7 @@ import Dijkstra
 import utilityFunctions as uf
 import Road
 import Queue as q
+from pymclevel import box
 
 class PlotAgent:
     def __init__(self, roadSystem, startPos):
@@ -24,16 +25,16 @@ class PlotAgent:
         self.blockPos = Vector(0,0)
         self.dir = Vector(1,0)
         self.dir.rotate_ip(Random.randint(0,359))
-        #self.plotted = False
+        self.plotted = False
         
     def Act(self):
-        #if self.plotted:
-            #return
+        if self.plotted:
+            return
         if not self.Move():
             return
         #self.TraceTraveledPath()
-        self.Evaluate()
-        #self.plotted = True
+        if self.Evaluate():
+            self.plotted = True
 
     '''Wander around 
     Keep close to existing roads'''
@@ -69,19 +70,21 @@ class PlotAgent:
         currentNode = self.roadSystem.graph[posIndex]
         if currentNode.roadVal >= self.roadSystem.roadCoverage or currentNode.plotted == True or currentNode.roadVal == 0:
             print("On road or other plot or too far")
-            return
+            return False
         roadConnection = self.FindClosestRoad(currentNode)#risk of infinite loop when a tile is surrounded by only 0s as road value
         #print("creating plot")
-        evaluatedPlot = Plot(roadConnection.height, Vector(roadConnection.x, roadConnection.y))
+        evaluatedPlot = Plot(roadConnection.height, Vector(roadConnection.x, roadConnection.y), self.roadSystem.origo)
         #print("expanding plot")
         evaluatedPlot = self.FillPlot(evaluatedPlot)
         #print("evaluate plot")
         if len(evaluatedPlot.tiles) > 9:
             self.roadSystem.plots.append(evaluatedPlot)
             print("plot created")
+            return True
         else:
             print("plot regected", len(evaluatedPlot.tiles))
             evaluatedPlot.SelfDestruct()
+            return False
 
         
     def FindClosestRoad(self, currentNode):
@@ -161,7 +164,7 @@ class PlotAgent:
     
     
 class Plot:
-    def __init__(self, bottomLevel, entranceCoords):
+    def __init__(self, bottomLevel, entranceCoords, worldOffset):
         self.bottomLevel = bottomLevel
         self.entranceCoords = entranceCoords
         self.tiles = []
@@ -171,6 +174,7 @@ class Plot:
         #self.offsetX
         #self.offsetY
         self.houseTiles = []
+        self.worldOffset = worldOffset
         
     def AddTile(self, tile):
         self.tiles.append(tile)
@@ -189,8 +193,12 @@ class Plot:
         for t in self.tiles:
             uf.setBlock(level, (35,data), origoX + t.x, self.bottomLevel, origoY + t.y)
         uf.setBlock(level, (35,data), origoX + int(self.entranceCoords.x), self.bottomLevel + 1, origoY + int(self.entranceCoords.y))
-        for t in self.houseTiles:
-            uf.setBlock(level, (35,data), origoX + t.x, self.bottomLevel + 1, origoY + t.y)
+        #for t in self.houseTiles:
+            #uf.setBlock(level, (35,data), origoX + t.x, self.bottomLevel + 1, origoY + t.y)
+        print(self.houseBounds)
+        for y in range(self.houseBounds.length):
+            for x in range(self.houseBounds.width):
+                uf.setBlock(level, (35,data), self.houseBounds.minx + x, self.bottomLevel + 1, self.houseBounds.minz + y)
         
     def SelfDestruct(self):
         for t in self.tiles:
@@ -253,68 +261,12 @@ class Plot:
         for y in range(largestPlot[3]):
             for x in range(largestPlot[2]):
                 self.houseTiles.append(self.maxBoundingBox[largestPlot[1]+y][largestPlot[0]+x])
-                
-        print("area of house:", len(self.houseTiles))
-                
-                
-                
-    
         
-        
-        '''
-        noEmptyNeighbors = []
-        nrEmptyNeighbors = [[0 for i in range(self.boundingHeight)] for j in range(self.boundingWidth)]
-        for y in range(self.boundingHeight):
-            for x in range(self.boundingWidth):
-                for x0 in (-1, 0, 1):
-                    for y0 in (-1, 0, 1):
-                        if (x0 == 0 and y0 == 0) or (x+x0 < 0 or x+x0 >= self.boundingWidth or y+y0 < 0 or y+y0 >= self.boundingHeight):
-                            continue
-                        if self.maxBoundingBox[y+y0][x+x0] == None:
-                            nrEmptyNeighbors[y][x] += 1
-                            
-                if nrEmptyNeighbors[y][x] == 0:
-                    noEmptyNeighbors.append((x,y))
-                    
-        for coords in noEmptyNeighbors:
-            X0 = coords[0]
-            Y0 = coords[1]
-            for other in noEmptyNeighbors:
-                if coords == other:
-                    continue
-                X = other[0]
-                Y = other[1]
-                if X-X0 == 0 or Y-Y0 == 0:
-                    '''
-                    
-        
+        self.houseBounds = box.BoundingBox((largestPlot[0] + self.offsetX + int(self.worldOffset.x),0,largestPlot[1] + self.offsetY + int(self.worldOffset.y)),(largestPlot[2],1,largestPlot[3]))
+                
+                
+                
 
-    
-    
-
-        
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
     
     
     
