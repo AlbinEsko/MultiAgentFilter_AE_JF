@@ -25,16 +25,16 @@ class PlotAgent:
         self.blockPos = Vector(0,0)
         self.dir = Vector(1,0)
         self.dir.rotate_ip(Random.randint(0,359))
-        self.plotted = False
+        #self.plotted = False
         
     def Act(self):
-        if self.plotted:
-            return
+        #if self.plotted:
+            #return
         if not self.Move():
             return
         #self.TraceTraveledPath()
-        if self.Evaluate():
-            self.plotted = True
+        self.Evaluate()
+            #self.plotted = True
 
     '''Wander around 
     Keep close to existing roads'''
@@ -175,6 +175,7 @@ class Plot:
         #self.offsetY
         self.houseTiles = []
         self.worldOffset = worldOffset
+        self.doorDir = 0
         
     def AddTile(self, tile):
         self.tiles.append(tile)
@@ -263,6 +264,21 @@ class Plot:
                 self.houseTiles.append(self.maxBoundingBox[largestPlot[1]+y][largestPlot[0]+x])
         
         self.houseBounds = box.BoundingBox((largestPlot[0] + self.offsetX + int(self.worldOffset.x),0,largestPlot[1] + self.offsetY + int(self.worldOffset.y)),(largestPlot[2],1,largestPlot[3]))
+        boxXcentre = self.houseBounds.minx + self.houseBounds.width/2
+        boxYcentre = self.houseBounds.minz + self.houseBounds.length/2
+        centToEntX = int(self.entranceCoords.x) - boxXcentre
+        centToEntY = int(self.entranceCoords.y) - boxYcentre
+        if abs(centToEntX) > abs(centToEntY):
+            if centToEntX < 0:
+                self.doorDir = 4
+            else:
+                self.doorDir = 2
+        else:
+            if centToEntY < 0:
+                self.doorDir = 1
+            else:
+                self.doorDir = 3
+        
                 
                 
                 
