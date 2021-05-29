@@ -156,7 +156,7 @@ class PlotAgent:
                 if expanded:
                     stack.append(toNode)
                     #print("expanded bounds")
-        plot.RemoveEntrance(startNode)
+        plot.FinalizePlot(startNode)
         return plot
     
     
@@ -166,13 +166,22 @@ class Plot:
         self.entranceCoords = entranceCoords
         self.tiles = []
         self.maxSide = 10
+        #self.boundingWidth
+        #self.boundingHeight
+        #self.offsetX
+        #self.offsetY
+        self.houseTiles = []
         
     def AddTile(self, tile):
         self.tiles.append(tile)
         tile.plotted = True
     
-    def RemoveEntrance(self, entrance):
+    def FinalizePlot(self, entrance):
         self.tiles.remove(entrance)
+        self.tiles.sort()
+        self.FindMaxBoundings()
+        self.PlaceTilesInMaxBound()
+        self.FindHouseBounds()
     
     def PrintPlot(self, level, origo, data):
         origoX = int(origo.x)
@@ -180,15 +189,110 @@ class Plot:
         for t in self.tiles:
             uf.setBlock(level, (35,data), origoX + t.x, self.bottomLevel, origoY + t.y)
         uf.setBlock(level, (35,data), origoX + int(self.entranceCoords.x), self.bottomLevel + 1, origoY + int(self.entranceCoords.y))
+        for t in self.houseTiles:
+            uf.setBlock(level, (35,data), origoX + t.x, self.bottomLevel + 1, origoY + t.y)
         
     def SelfDestruct(self):
         for t in self.tiles:
             t.plotted = False
+            
+    def FindMaxBoundings(self):
+        minX = sys.maxint
+        maxX = -1
+        minY = sys.maxint
+        maxY = -1
+        for t in self.tiles:
+            minX = min(minX, t.x)
+            maxX = max(maxX, t.x)
+            minY = min(minY, t.y)
+            maxY = max(maxY, t.y)
+        self.boundingWidth = maxX - minX + 1
+        self.boundingHeight = maxY - minY + 1
+        self.offsetX = minX
+        self.offsetY = minY
         
+    def PlaceTilesInMaxBound(self):
+        print("Width, height", self.boundingWidth, self.boundingHeight)
+        self.maxBoundingBox = [[None for i in range(self.boundingWidth)] for j in range(self.boundingHeight)]
+        for t in self.tiles:
+            #print("x, y:",t.x-self.offsetX, t.y-self.offsetY)
+            self.maxBoundingBox[t.y-self.offsetY][t.x-self.offsetX] = t
+        
+    def FindHouseBounds(self):
+        largestPlot = (0,0,0,0)
+        for t in self.tiles:
+            x0 = t.x - self.offsetX
+            y0 = t.y - self.offsetY
+            width = 1
+            height = 1
+            expanded = True
+            while expanded:
+                expanded = False
+                if x0 + (width-1) + 1 < self.boundingWidth:
+                    valid=True
+                    for i in range(height):
+                        if self.maxBoundingBox[y0+i][x0 + width-1 + 1] == None:
+                            valid = False
+                            break
+                    if valid:
+                        width += 1
+                        expanded = True
+                if y0 + (height-1) + 1 < self.boundingHeight:
+                    valid=True
+                    for i in range(width):
+                        if self.maxBoundingBox[y0 + height-1 + 1][x0 + i] == None:
+                            valid = False
+                            break
+                    if valid:
+                        height += 1
+                        expanded = True
+            if width * height > largestPlot[2] * largestPlot[3]:
+                largestPlot = (x0, y0, width, height)
+                #print("largest plot set:",largestPlot)
+            
+        for y in range(largestPlot[3]):
+            for x in range(largestPlot[2]):
+                self.houseTiles.append(self.maxBoundingBox[largestPlot[1]+y][largestPlot[0]+x])
+                
+        print("area of house:", len(self.houseTiles))
+                
+                
+                
+    
+        
+        
+        '''
+        noEmptyNeighbors = []
+        nrEmptyNeighbors = [[0 for i in range(self.boundingHeight)] for j in range(self.boundingWidth)]
+        for y in range(self.boundingHeight):
+            for x in range(self.boundingWidth):
+                for x0 in (-1, 0, 1):
+                    for y0 in (-1, 0, 1):
+                        if (x0 == 0 and y0 == 0) or (x+x0 < 0 or x+x0 >= self.boundingWidth or y+y0 < 0 or y+y0 >= self.boundingHeight):
+                            continue
+                        if self.maxBoundingBox[y+y0][x+x0] == None:
+                            nrEmptyNeighbors[y][x] += 1
+                            
+                if nrEmptyNeighbors[y][x] == 0:
+                    noEmptyNeighbors.append((x,y))
+                    
+        for coords in noEmptyNeighbors:
+            X0 = coords[0]
+            Y0 = coords[1]
+            for other in noEmptyNeighbors:
+                if coords == other:
+                    continue
+                X = other[0]
+                Y = other[1]
+                if X-X0 == 0 or Y-Y0 == 0:
+                    '''
+                    
+        
+
     
     
-    
-    
+
+        
     
     
     

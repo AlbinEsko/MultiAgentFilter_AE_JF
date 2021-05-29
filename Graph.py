@@ -67,6 +67,9 @@ class Node:
         self.roadVal = 0
         self.plotted = False
         
+    def __lt__(self, other):
+        return self.index < other.index
+        
     def addEdge(self, edge):
         self.adjacent.append(edge)
     
@@ -273,6 +276,19 @@ def creategraph(nodes):
 
 
 if __name__ == "__main__":
+    node1 = Node(0,0,0,0,0)
+    node2 = Node(1,1,0,0,0)
+    node3 = Node(2,2,0,0,0)
+    node4 = Node(3,3,0,0,0)
+    node5 = Node(4,4,0,0,0)
+    print(node1 < node2)
+    
+    nodes = [node2, node5, node1, node3, node4]
+    nodes.sort()
+    for n in nodes:
+        print(n.index)
+    
+    '''
     import random
     W = 10
     H = 15
@@ -287,3 +303,4 @@ if __name__ == "__main__":
         print(len(r))
         #tot += len(r)
     #print(tot)
+'''
