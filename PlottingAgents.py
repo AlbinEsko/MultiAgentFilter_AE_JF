@@ -212,8 +212,8 @@ class Plot:
             for x in range(largestPlot[2]):
                 self.houseTiles.append(self.maxBoundingBox[largestPlot[1]+y][largestPlot[0]+x])
         
-        self.houseBounds = box.BoundingBox((largestPlot[0] + self.offsetX + int(self.worldOffset.x), 0, largestPlot[1] + self.offsetY + int(self.worldOffset.y) + 1),(largestPlot[2]-2, 1, largestPlot[3]))
-        if self.houseBounds.width < 8 or self.houseBounds.length < 8:
+        self.houseBounds = box.BoundingBox((largestPlot[0] + self.offsetX + int(self.worldOffset.x) + 1, 0, largestPlot[1] + self.offsetY + int(self.worldOffset.y) + 1),(largestPlot[2] - 2, 1, largestPlot[3] - 2))
+        if self.houseBounds.width < 6 or self.houseBounds.length < 6:
             #print("too small", self.houseBounds.width, self.houseBounds.length)
             return False
         
@@ -305,10 +305,10 @@ class Plot:
         while blocksAbove:
             blocksAbove = False
             y += 1
-            for z in range(self.houseBounds.length):
-                for x in range(self.houseBounds.width):
-                    if level.blockAt(self.houseBounds.minx + x,y,self.houseBounds.minz + z) != 0:
-                        uf.setBlock(level, (0,0), self.houseBounds.minx + x, y, self.houseBounds.minz + z)
+            for z in range(self.houseBounds.length + 2):
+                for x in range(self.houseBounds.width + 2):
+                    if level.blockAt(self.houseBounds.minx + x - 1,y,self.houseBounds.minz + z - 1) != 0:
+                        uf.setBlock(level, (0,0), self.houseBounds.minx + x - 1, y, self.houseBounds.minz + z - 1)
                         blocksAbove = True
                 
 
