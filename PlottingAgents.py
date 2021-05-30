@@ -219,8 +219,10 @@ class Plot:
         
         boxXcentre = self.houseBounds.minx + self.houseBounds.width/2
         boxYcentre = self.houseBounds.minz + self.houseBounds.length/2
-        centToEntX = int(self.entranceCoords.x) - boxXcentre
-        centToEntY = int(self.entranceCoords.y) - boxYcentre
+        centToEntX = int(self.entranceCoords.x) + int(self.worldOffset.x) - boxXcentre
+        centToEntY = int(self.entranceCoords.y) + int(self.worldOffset.y) - boxYcentre
+        print(boxXcentre, boxYcentre)
+        print(centToEntX, centToEntY)
         if abs(centToEntX) > abs(centToEntY):
             if centToEntX < 0:
                 self.doorDir = 4
@@ -232,7 +234,7 @@ class Plot:
             else:
                 self.doorDir = 3
                 
-        print("housable plot found", self.houseBounds.width, self.houseBounds.length)
+        print("housable plot found", self.houseBounds.width, self.houseBounds.length, self.doorDir)
         return True
     
     def FillPlot(self, graph, stopRoadVal, level):
