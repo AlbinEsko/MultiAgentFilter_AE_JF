@@ -1,5 +1,11 @@
 # -*- coding: utf-8 -*-
 
+"""
+Created on Fri May 14 15:15:26 2021
+
+@author: Albin Esko
+"""
+
 class BinaryHeap:
     def __init__(self, maxN = 0, data = None):
         self.__n = 0

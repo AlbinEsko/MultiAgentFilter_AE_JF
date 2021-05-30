@@ -2,7 +2,7 @@
 """
 Created on Wed May  5 14:17:04 2021
 
-@author: golf_
+@author: Albin Esko
 """
 import sys
 import heapq
@@ -43,13 +43,13 @@ class ExtendorAgent:
         return self.ConvertToIntCoords(self.pos) == self.ConvertToIntCoords(oldPos)
     
     def OutOfBounds(self):
-        if(self.pos.x + self.dir.x * self.speed < 0):
+        if(self.pos.x + self.dir.x * self.speed < 0 + 1):
             return True
-        if(self.pos.y + self.dir.y * self.speed < 0):
+        if(self.pos.y + self.dir.y * self.speed < 0 + 1):
             return True
-        if(self.pos.x + self.dir.x * self.speed >= self.roadSystem.width):
+        if(self.pos.x + self.dir.x * self.speed >= self.roadSystem.width - 1):
             return True
-        if(self.pos.y + self.dir.y * self.speed >= self.roadSystem.height):
+        if(self.pos.y + self.dir.y * self.speed >= self.roadSystem.height - 1):
             return True
         return False
     
@@ -111,23 +111,36 @@ class ExtendorAgent:
                     value, nextX, nextY = self.CheckValue(X-1,Y+1,value)
             #print(value, nextX, nextY)
             path.append([nextX, nextY])
-            self.printRoad(path)
+            self.DebugPrintRoad(path)
             
-    def printRoad(self, path):
+    def DebugPrintRoad(self, path):
+        while len(path) != 0:
+            pos = path.roadTiles.pop()
+            placeX = pos[0]
+            placeY = pos[1]
+            self.roadSystem.DebugSetRoadMapTile(placeX, placeY)
+            
+    def DebugPrintRoad_Ind(self, path):
+        while len(path) != 0:
+            pos = path.pop()
+            placeX = pos % self.roadSystem.width
+            placeY = pos / self.roadSystem.width
+            self.roadSystem.DebugSetRoadMapTile(placeX, placeY)
+       
+    def PrintRoad(self, path):
         while len(path) != 0:
             pos = path.roadTiles.pop()
             placeX = pos[0]
             placeY = pos[1]
             self.roadSystem.SetRoadMapTile(placeX, placeY)
             
-    def printRoad_Ind(self, path):
+    def PrintRoad_Ind(self, path):
         while len(path) != 0:
             pos = path.pop()
             placeX = pos % self.roadSystem.width
             placeY = pos / self.roadSystem.width
             self.roadSystem.SetRoadMapTile(placeX, placeY)
-        
-        
+     
     def CheckValue(self, X, Y, value):
         value = self.roadSystem.roadMap[Y][X]
         nextX = X
@@ -183,13 +196,13 @@ class ConnectorAgent:
         #print(self.pos)
     
     def OutOfBounds(self, testDir):
-        if(self.pos.x + testDir.x < 0):
+        if(self.pos.x + testDir.x < 0 + 1):
             return True
-        if(self.pos.y + testDir.y < 0):
+        if(self.pos.y + testDir.y < 0 + 1):
             return True
-        if(self.pos.x + testDir.x >= self.roadSystem.width):
+        if(self.pos.x + testDir.x >= self.roadSystem.width - 1):
             return True
-        if(self.pos.y + testDir.y >= self.roadSystem.height):
+        if(self.pos.y + testDir.y >= self.roadSystem.height - 1):
             return True
         return False
     
@@ -254,6 +267,8 @@ class ConnectorAgent:
         d = Dijkstra.dijkstras(self.roadSystem.graph, posIndex)
         d.buildCompleteMinSpanTree(self.roadSystem.graph)
         edges = d.pathTo(checkedNode.index)
+        if edges == None or len(edges) == 0:
+            return
         path = Road.Path(edges, self.roadSystem.width)
         print("Suggesting connection")
         if self.roadSystem.Analyze(path, 2):

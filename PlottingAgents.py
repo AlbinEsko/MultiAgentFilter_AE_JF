@@ -16,6 +16,7 @@ import utilityFunctions as uf
 import Road
 import Queue as q
 from pymclevel import box
+import BlockIDs as Blocks
 
 class PlotAgent:
     def __init__(self, roadSystem, startPos):
@@ -25,16 +26,11 @@ class PlotAgent:
         self.blockPos = Vector(0,0)
         self.dir = Vector(1,0)
         self.dir.rotate_ip(Random.randint(0,359))
-        #self.plotted = False
         
     def Act(self):
-        #if self.plotted:
-            #return
         if not self.Move():
             return
-        #self.TraceTraveledPath()
         self.Evaluate()
-            #self.plotted = True
 
     '''Wander around 
     Keep close to existing roads'''
@@ -42,7 +38,7 @@ class PlotAgent:
         oldPos = self.pos
         if(not self.OutOfBounds()):
             self.pos += self.dir * self.speed
-            self.dir.rotate_ip(Random.randint(-20,20)) #Needs improvement for the wanted wandering behavior; move to roadMap values of zero
+            self.dir.rotate_ip(Random.randint(-20,20))
         else:
             self.dir.rotate_ip(180)
             self.pos += self.dir * self.speed
@@ -68,21 +64,24 @@ class PlotAgent:
     def Evaluate(self):
         posIndex = int(self.pos.x) + int(self.pos.y) * self.roadSystem.width
         currentNode = self.roadSystem.graph[posIndex]
-        if currentNode.roadVal >= self.roadSystem.roadCoverage or currentNode.plotted == True or currentNode.roadVal == 0:
-            print("On road or other plot or too far")
+        if currentNode.roadVal == 0:
+            self.dir.rotate_ip(Random.randint(160,200))
             return False
-        roadConnection = self.FindClosestRoad(currentNode)#risk of infinite loop when a tile is surrounded by only 0s as road value
+        if currentNode.roadVal >= self.roadSystem.roadCoverage or currentNode.plotted == True:
+            #print("On road or other plot or too far")
+            return False
+        roadConnection = self.FindClosestRoad(currentNode)
         #print("creating plot")
         evaluatedPlot = Plot(roadConnection.height, Vector(roadConnection.x, roadConnection.y), self.roadSystem.origo)
         #print("expanding plot")
-        evaluatedPlot = self.FillPlot(evaluatedPlot)
+        
         #print("evaluate plot")
-        if len(evaluatedPlot.tiles) > 9:
+        if evaluatedPlot.FillPlot(self.roadSystem.graph, self.roadSystem.roadCoverage - 1, self.roadSystem.level):
             self.roadSystem.plots.append(evaluatedPlot)
-            print("plot created")
+            #print("plot created", evaluatedPlot.houseBounds.width, evaluatedPlot.houseBounds.length)
             return True
         else:
-            print("plot regected", len(evaluatedPlot.tiles))
+            #print("plot regected", len(evaluatedPlot.tiles))
             evaluatedPlot.SelfDestruct()
             return False
 
@@ -108,67 +107,13 @@ class PlotAgent:
 
         return closestNode
     
-    def FillPlot(self, plot):
-        graph = self.roadSystem.graph
-        start = plot.entranceCoords
-        startNode = graph.getNode(int(start.x), int(start.y))
-        maxX = startNode.x
-        minX = startNode.x
-        maxY = startNode.y
-        minY = startNode.y
-        enqueued = [False for i in range(graph.nrNodes)]
-        stack = []
-        stack.append(startNode)
-        enqueued[startNode.index] = True
-        while(len(stack) > 0):
-            #print(len(stack))
-            activeNode = stack.pop()
-            plot.AddTile(activeNode)
-            for e in activeNode.adjacent:
-                toNode = graph[e.to]
-                if toNode.x - activeNode.x != 0 and toNode.y - activeNode.y != 0: #to prevent diagonal traversal
-                    continue
-                if enqueued[toNode.index] or toNode.plotted or toNode.roadVal >= self.roadSystem.roadCoverage-1:
-                    enqueued[toNode.index] = True
-                    continue
-                enqueued[toNode.index] = True
-                toX = toNode.x
-                toY = toNode.y
-                
-                if toX <= maxX and toX >= minX and toY <= maxY and toY >= minY: #check if inside already established bounds
-                    stack.append(toNode)
-                    #print("inside bounds")
-                    continue
-                if maxX - minX >= plot.maxSide and maxY - minY >= plot.maxSide:
-                    continue
-                
-                #check if expansion of bounds is allowed
-                expanded = False
-                if toX < minX and maxX - toX < plot.maxSide:
-                    minX = toX
-                    expanded = True
-                if toX > maxX and toX - minX < plot.maxSide:
-                    maxX = toX
-                    expanded = True
-                if toY < minY and maxY - toY < plot.maxSide:
-                    minY = toY
-                    expanded = True
-                if toY > maxY and toY - minY < plot.maxSide:
-                    maxY = toY
-                    expanded = True
-                if expanded:
-                    stack.append(toNode)
-                    #print("expanded bounds")
-        plot.FinalizePlot(startNode)
-        return plot
-    
     
 class Plot:
     def __init__(self, bottomLevel, entranceCoords, worldOffset):
         self.bottomLevel = bottomLevel
         self.entranceCoords = entranceCoords
         self.tiles = []
-        self.maxSide = 10
+        self.maxSide = 12
         #self.boundingWidth
         #self.boundingHeight
         #self.offsetX
@@ -181,12 +126,15 @@ class Plot:
         self.tiles.append(tile)
         tile.plotted = True
     
-    def FinalizePlot(self, entrance):
+    def FinalizePlot(self, entrance, level):
         self.tiles.remove(entrance)
         self.tiles.sort()
         self.FindMaxBoundings()
         self.PlaceTilesInMaxBound()
-        self.FindHouseBounds()
+        if self.FindHouseBounds():
+            self.ModifyTerrain(level)
+            return True
+        return False
     
     def PrintPlot(self, level, origo, data):
         origoX = int(origo.x)
@@ -196,7 +144,7 @@ class Plot:
         uf.setBlock(level, (35,data), origoX + int(self.entranceCoords.x), self.bottomLevel + 1, origoY + int(self.entranceCoords.y))
         #for t in self.houseTiles:
             #uf.setBlock(level, (35,data), origoX + t.x, self.bottomLevel + 1, origoY + t.y)
-        print(self.houseBounds)
+        #print(self.houseBounds)
         for y in range(self.houseBounds.length):
             for x in range(self.houseBounds.width):
                 uf.setBlock(level, (35,data), self.houseBounds.minx + x, self.bottomLevel + 1, self.houseBounds.minz + y)
@@ -221,7 +169,7 @@ class Plot:
         self.offsetY = minY
         
     def PlaceTilesInMaxBound(self):
-        print("Width, height", self.boundingWidth, self.boundingHeight)
+        #print("Width, height", self.boundingWidth, self.boundingHeight)
         self.maxBoundingBox = [[None for i in range(self.boundingWidth)] for j in range(self.boundingHeight)]
         for t in self.tiles:
             #print("x, y:",t.x-self.offsetX, t.y-self.offsetY)
@@ -263,7 +211,11 @@ class Plot:
             for x in range(largestPlot[2]):
                 self.houseTiles.append(self.maxBoundingBox[largestPlot[1]+y][largestPlot[0]+x])
         
-        self.houseBounds = box.BoundingBox((largestPlot[0] + self.offsetX + int(self.worldOffset.x),0,largestPlot[1] + self.offsetY + int(self.worldOffset.y)),(largestPlot[2],1,largestPlot[3]))
+        self.houseBounds = box.BoundingBox((largestPlot[0] + self.offsetX + int(self.worldOffset.x) + 1, 0, largestPlot[1] + self.offsetY + int(self.worldOffset.y) + 1),(largestPlot[2]-2, 1, largestPlot[3]-2))
+        if self.houseBounds.width < 6 or self.houseBounds.length < 6:
+            #print("too small", self.houseBounds.width, self.houseBounds.length)
+            return False
+        
         boxXcentre = self.houseBounds.minx + self.houseBounds.width/2
         boxYcentre = self.houseBounds.minz + self.houseBounds.length/2
         centToEntX = int(self.entranceCoords.x) - boxXcentre
@@ -278,9 +230,85 @@ class Plot:
                 self.doorDir = 1
             else:
                 self.doorDir = 3
+                
+        print("housable plot found", self.houseBounds.width, self.houseBounds.length)
+        return True
+    
+    def FillPlot(self, graph, stopRoadVal, level):
+        start = self.entranceCoords
+        startNode = graph.getNode(int(start.x), int(start.y))
+        maxX = startNode.x
+        minX = startNode.x
+        maxY = startNode.y
+        minY = startNode.y
+        enqueued = [False for i in range(graph.nrNodes)]
+        stack = []
+        stack.append(startNode)
+        enqueued[startNode.index] = True
+        while(len(stack) > 0):
+            #print(len(stack))
+            activeNode = stack.pop()
+            self.AddTile(activeNode)
+            for e in activeNode.adjacent:
+                toNode = graph[e.to]
+                if toNode.x - activeNode.x != 0 and toNode.y - activeNode.y != 0: #to prevent diagonal traversal
+                    continue
+                if enqueued[toNode.index] or toNode.plotted or toNode.roadVal >= stopRoadVal:
+                    enqueued[toNode.index] = True
+                    continue
+                enqueued[toNode.index] = True
+                toX = toNode.x
+                toY = toNode.y
+                
+                if toX <= maxX and toX >= minX and toY <= maxY and toY >= minY: #check if inside already established bounds
+                    stack.append(toNode)
+                    #print("inside bounds")
+                    continue
+                if maxX - minX >= self.maxSide and maxY - minY >= self.maxSide:
+                    continue
+                
+                #check if expansion of bounds is allowed
+                expanded = False
+                if toX < minX and maxX - toX < self.maxSide:
+                    minX = toX
+                    expanded = True
+                if toX > maxX and toX - minX < self.maxSide:
+                    maxX = toX
+                    expanded = True
+                if toY < minY and maxY - toY < self.maxSide:
+                    minY = toY
+                    expanded = True
+                if toY > maxY and toY - minY < self.maxSide:
+                    maxY = toY
+                    expanded = True
+                if expanded:
+                    stack.append(toNode)
+                    #print("expanded bounds")
+        return self.FinalizePlot(startNode, level)
+    
+    def ModifyTerrain(self, level):
+        airBelow = True
+        y = self.bottomLevel
+        while airBelow:
+            airBelow = False
+            for z in range(self.houseBounds.length):
+                for x in range(self.houseBounds.width):
+                    block = level.blockAt(self.houseBounds.minx + x, y, self.houseBounds.minz + z) 
+                    if not block in Blocks.getGrounds():
+                        uf.setBlock(level, (98,0), self.houseBounds.minx + x, y, self.houseBounds.minz + z)
+                        airBelow = True
+            y += -1
         
-                
-                
+        blocksAbove = True
+        y = self.bottomLevel
+        while blocksAbove:
+            blocksAbove = False
+            y += 1
+            for z in range(self.houseBounds.length + 2):
+                for x in range(self.houseBounds.width + 2):
+                    if level.blockAt(self.houseBounds.minx + x-1,y,self.houseBounds.minz + z-1) != 0:
+                        uf.setBlock(level, (0,0), self.houseBounds.minx + x-1, y, self.houseBounds.minz + z-1)
+                        blocksAbove = True
                 
 
     

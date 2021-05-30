@@ -1,4 +1,9 @@
 # -*- coding: utf-8 -*-
+"""
+Created on Mon Mar  8 10:34:34 2021
+
+@author: Albin Esko
+"""
 import sys
 import heapq
 import numpy as np
@@ -12,7 +17,7 @@ import PlottingAgents
 
 class RoadSystem:
     agents = []
-    roadCoverage = 10
+    roadCoverage = 16
     def __init__(self, level, box, hgtMap, lqdMap, origo):
         self.level = level
         self.origo = origo
@@ -29,7 +34,8 @@ class RoadSystem:
         self.multiplier = 4
         self.plotAgents = []
         self.plots = []
-      
+        self.PointToVillage()
+        
         
     def FindStart(self):
         regions = Graph.newConnectivity(self.graph)
@@ -37,9 +43,29 @@ class RoadSystem:
         for r in regions:
             if len(r) > len(largestRegion):
                 largestRegion = r
-                
         return Random.choice(largestRegion)
     
+    def PointToVillage(self):
+        boxCentre = Vector(self.origo.x + self.width/2, self.origo.y + self.height/2)
+        pointDir = (self.startPos + self.origo) - boxCentre
+        if pointDir.length() < 100:
+            print("No arrow")
+            return
+        pointDir.normalize_ip()
+        arrowSize = 10
+        
+        for i in range(arrowSize):
+            uf.setBlock(self.level, (35,0), int(boxCentre.x + pointDir.x*i), self.graph.getNode(self.width/2,self.height/2).height + 6, int(boxCentre.y + pointDir.y*i))
+            tipLocation = boxCentre + pointDir * i
+        
+        spokeDir = pointDir.rotate(160)
+        for i in range(arrowSize):
+            uf.setBlock(self.level, (35,0), int(tipLocation.x + spokeDir.x*i), self.graph.getNode(self.width/2,self.height/2).height + 6, int(tipLocation.y + spokeDir.y*i))
+            
+        spokeDir.rotate_ip(40)
+        for i in range(arrowSize):
+            uf.setBlock(self.level, (35,0), int(tipLocation.x + spokeDir.x*i), self.graph.getNode(self.width/2,self.height/2).height + 6, int(tipLocation.y + spokeDir.y*i))
+            
     def CreateExtendors(self, nrAgents):
         for i in range(nrAgents):
             self.agents.append(RoadAgents.ExtendorAgent(self, self.startPos))
@@ -61,6 +87,8 @@ class RoadSystem:
     def UpdatePlotAgents(self):
         for a in self.plotAgents:
             a.Act()
+    
+    def PrintPlots(self):
         c = 0
         for p in self.plots:
             p.PrintPlot(self.level, self.origo, c + 6)
@@ -92,11 +120,23 @@ class RoadSystem:
             prevTileX=tile[0]
             prevTileY=tile[1]
             
-    def SetRoadMapTile(self, x, y, data):
+    def DebugSetRoadMapTile(self, x, y, data):
         self.graph.getNode(x,y).roadVal = 99
         uf.setBlock(self.level, (35,data), int(self.origo.x + x), self.graph.getNode(x,y).height, int(self.origo.y + y ))
         self.RadiateFromPlacedRoad(x, y)
         #print("Tile and coverage set")
+    
+    def SetRoadMapTile(self, X, Y, data):
+        self.graph.getNode(X,Y).roadVal = 99
+        height = self.graph.getNode(X,Y).height
+        for y in (-1, 0, 1):
+            for x in (-1, 0, 1):
+                if self.level.blockAt(int(self.origo.x + X + x), height, int(self.origo.y + Y +y)) != 0:
+                    uf.setBlock(self.level, (45,0), int(self.origo.x + X + x), height, int(self.origo.y + Y + y))
+                    uf.setBlock(self.level, (0,0), int(self.origo.x + X + x), height+1, int(self.origo.y + Y + y))
+                    uf.setBlock(self.level, (0,0), int(self.origo.x + X + x), height+2, int(self.origo.y + Y + y))
+                    uf.setBlock(self.level, (0,0), int(self.origo.x + X + x), height+3, int(self.origo.y + Y + y))
+        self.RadiateFromPlacedRoad(X, Y)
     
     def RadiateFromPlacedRoad(self, X, Y):
         for i in range(self.roadCoverage):

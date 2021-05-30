@@ -26,25 +26,17 @@ def perform(level, box, options):
     boxOrigo = Vector(box.minx, box.minz)
     roads = Road.RoadSystem(level,box,hgtMap,liquidmap, boxOrigo)
     print("creating agents")
-    roads.CreateExtendors(50)
+    roads.CreateExtendors(35)
     roads.CreateConnectors(50)
-    for r in range(100):
+    itterations =box.length/2 + box.width/2
+    for r in range(itterations):
         roads.UpdateAgents()
-    roads.CreatePloters(1)
-    for r in range(100):
-        #print(r,"/100")
+    roads.CreatePloters(5)
+    for r in range(itterations):
         roads.UpdatePlotAgents()
-    
-    
-    '''
-    graph = Graph.Graph(box.width, box.length)
-    graph.createOrthogonalGraphFrom2D(hgtMap)
-    print("graph created")
-    regions = Graph.newConnectivity(graph, hgtMap)
-    printRegions(level, box, regions)
-    puddles = Graph.newLiquidMap(graph, liquidmap)
-    printRegions(level, box, puddles)
-    '''
+    #roads.PrintPlots()
+
+
 def createHeightMap(level, box):
     row = box.maxx - box.minx #vågräta
     column = box.maxz - box.minz #lodräta
@@ -55,6 +47,7 @@ def createHeightMap(level, box):
         #print(r)
 
     for z in range(column):  # range(box.minx, box.maxx, 1):
+        print(z,"/",column)
         for x in range(row):  # range(box.minz, box.maxz, 1):
             for y in range(box.maxy, box.miny, -1):
                 block = level.blockAt(box.minx+x, y, box.minz+z) 

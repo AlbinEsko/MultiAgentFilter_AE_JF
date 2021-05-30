@@ -1,5 +1,9 @@
 # -*- coding: utf-8 -*-
+"""
+Created on Mon Mar  15 13:08:34 2021
 
+@author: Albin Esko
+"""
 class Graph:
     def __init__(self, w, h, hgtMap, lqdMap):
         self.nrEdges = 0

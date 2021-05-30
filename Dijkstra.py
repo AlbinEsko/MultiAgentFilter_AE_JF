@@ -1,4 +1,10 @@
 # -*- coding: utf-8 -*-
+"""
+Created on Fri May 14 13:15:26 2021
+
+@author: Albin Esko
+"""
+
 import sys
 import numpy as np
 import Graph
