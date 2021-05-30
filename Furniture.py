@@ -58,21 +58,21 @@ class Bed:
         xoffset =0
         zoffset =0
         if direction == 1:  # NORTH
-            data1 = 10
-            data2 = 2
-            zoffset = +1
-        elif direction == 2:  # EAST
-            data1 = 11
-            data2 = 3
-            xoffset = -1
-        elif direction == 3:  # SOUTH
             data1 = 8
             data2 = 0
             zoffset = -1
-        elif direction == 4:  # WEST
+        elif direction == 2:  # EAST
             data1 = 9
             data2 = 1
             xoffset = 1
+        elif direction == 3:  # SOUTH
+            data1 = 10
+            data2 = 2
+            zoffset = +1
+        elif direction == 4:  # WEST
+            data1 = 11
+            data2 = 3
+            xoffset = -1
         uf.setBlock(level,(block,data1),x,y,z)
         uf.setBlock(level,(block,data2),x+xoffset,y,z+zoffset)
 

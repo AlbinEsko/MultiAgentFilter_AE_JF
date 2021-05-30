@@ -1,9 +1,10 @@
 import time
-
+from collections import namedtuple
 from MAF_Utility import Direction
 from collections import deque
+import random as rand
 
-
+_Surrounding = namedtuple("_Surrounding",("forward","right","backward","left"))
 # __name__ = "__main__"
 obstacles = ["W", "G", ""]
 
@@ -57,10 +58,18 @@ class FurnitureAgent:
         self.position = Position()
         self.level = 0
         self.direction = None
+        self.savedblock =[]
         self.setup()
         self.nextlevelstartingdirection = Direction.NONE
         self.nextlevelstartingpos = Position()
         self.placementqueue = deque()
+        self.clockwise = True
+        self.furperlevel=0
+        self.furnitures = self._getfurniture()
+        self.furniturepos = []
+
+
+        # self._getfurniture()
 
     def Act(self):
 
@@ -70,25 +79,47 @@ class FurnitureAgent:
                 self.UpdateBlock(self.placementqueue.popleft())
             print("Current Direction: " + str(self.direction))
 
-            leftpeek = self.peekleft()
-            if leftpeek in ["0","E"] :
-                self.turnleft()
-            if len(leftpeek) > 3 and leftpeek[3] == "4":  # when fidning top staris, prepare for nextlevel
-                self.getdirectionnextlevel(leftpeek[2])
-                self.nextlevelstartingpos = self.getleftposition()
-            forwardpeek = self.peekforward()
-            if forwardpeek not in ["0", "E"]:
-                self.turnright()
-            if forwardpeek == "N":
-                self.UpdateBlock("FN")
-                self.placementqueue.append("FN")
-            if leftpeek == "N":
-                self.UpdateBlock("FN")
+            surrondingobjects = self._getsurroundingobjects()
 
-            print(self.position)
-            print("Current Block: " + str(self.GetCurrentBlock()))
-            print("New Direction: " + str(self.direction))
-            self.printfloorplans()
+            if surrondingobjects.forward == "N":
+                self.UpdateBlock("WA")
+                self.placementqueue.append("WA")
+            if surrondingobjects.left in ["0","E"] :
+                self.turnleft()
+                surrondingobjects = self._getsurroundingobjects()
+            if len(surrondingobjects.left) > 3 and surrondingobjects.left[3] == "4":  # when fidning top staris, prepare for nextlevel
+                self.getdirectionnextlevel(surrondingobjects.left[2])
+                self.nextlevelstartingpos = self.getleftposition()
+            if surrondingobjects.left == "N" and self.GetCurrentBlock() != "E":
+                self.UpdateBlock("WA")
+
+
+            while surrondingobjects.forward not in ["0","E"]:
+                self.turnright()
+                surrondingobjects = self._getsurroundingobjects()
+
+
+
+            
+            counter = 0
+            for i in surrondingobjects:
+                if i =="WA":
+                    counter += 1
+            if counter == 2:
+                self.UpdateBlock("WA")
+
+            if surrondingobjects.forward == "0" and surrondingobjects.backward == "0" \
+                    and self.furnitureonlevellimitreached() and self.GetCurrentBlock() != "E":
+                temp = self._placefurniture()
+                if temp is not None:
+                    self.furniturepos.append([temp, Position(self.position.getx,self.position.getz), self.level])
+
+                    
+
+            # print(self.position)
+            # print("Current Block: " + str(self.GetCurrentBlock()))
+            # print("New Direction: " + str(self.direction))
+            # self.printfloorplans()
 
             self.move()
             steps += 1
@@ -100,9 +131,23 @@ class FurnitureAgent:
                     continue
 
                 break
+        self.FurniturePlacement()
+        self.floorplans[0][self.savedblock[0][2]][self.savedblock[0][1]] = self.savedblock[0][0]
 
-    def Furniture(floorplans):
-        pass
+    def FurniturePlacement(self):
+        for furniture in self.furniturepos:
+            self.PlaceInMap(furniture[0],furniture[1],furniture[2])
+
+    def furnitureonlevellimitreached(self):
+        currentlevel = self.level
+        nroffurniture = 0
+        for furniture in self.furniturepos:
+            if furniture[2] == currentlevel:
+                nroffurniture +=1
+        if nroffurniture >= self.furperlevel:
+            return False
+        else:
+            return True
 
     def GetCurrentBlock(self):
         # if self.floorplans < 1:
@@ -186,9 +231,26 @@ class FurnitureAgent:
         elif self.direction == Direction.WEST:
             peek = self.peek(Direction.SOUTH)
         return peek
+    def peekbackwards(self):
+        peek = ""
+        if self.direction == Direction.NORTH:
+            peek = self.peek(Direction.SOUTH)
+        elif self.direction == Direction.EAST:
+            peek = self.peek(Direction.WEST)
+        elif self.direction == Direction.SOUTH:
+            peek = self.peek(Direction.NORTH)
+        elif self.direction == Direction.WEST:
+            peek = self.peek(Direction.EAST)
+        return peek
+
+    def PlaceInMap(self, string, position ,level):
+        # type: (str, Position, int) -> None
+        self.floorplans[level][position.getz][position.getx] = string
+
 
     def UpdateBlock(self, string):
-        self.floorplans[self.level][self.position.getz][self.position.getx] = string
+        if string is not None:
+            self.floorplans[self.level][self.position.getz][self.position.getx] = string
 
     def setup(self):
         zsize = len(self.floorplans[0])
@@ -207,6 +269,7 @@ class FurnitureAgent:
             self.direction = Direction.NORTH
         # first move
         self.move()
+        self.savedblock.append([self.GetCurrentBlock(),self.position.getx,self.position.getz])
         self.UpdateBlock("E")
 
     def _setpostodoor(self, xsize, zsize):
@@ -250,7 +313,7 @@ class FurnitureAgent:
             list.append(line)
         for i in list:
             print(i)
-        time.sleep(1)
+        # time.sleep(1)
 
     def getdirectionnextlevel(self, dirchar):
         if dirchar == "N":
@@ -267,31 +330,140 @@ class FurnitureAgent:
         self.Position(self.nextlevelstartingpos.getx, self.nextlevelstartingpos.getz)
         self.direction = self.nextlevelstartingdirection
 
+    def _getsurroundingobjects(self):
+        return _Surrounding(self.peekforward(),self.peekright(),self.peekbackwards(),self.peekleft())
+
+    def _getfurniture(self):
+
+        levels = len(self.floorplans) / 2
+        zsize = len(self.floorplans[0])
+        xsize = len(self.floorplans[0][0])
+        nroffurniture = int((levels * zsize * xsize) * .15)
+        furnitures = []
+        if nroffurniture <=1:
+            nroffurniture = 4
+
+        furnitures.append(["C", int(nroffurniture * .3)])
+        furnitures.append(["F", int(nroffurniture * .3)])
+        furnitures.append(["B", int(nroffurniture * .3)])
+        furnitures.append(["S", int(nroffurniture * .3)])
+
+        temp = 0
+        for i in furnitures:
+            temp +=i[1]
+
+        self.furperlevel = int(temp/2)
+        print(self.furperlevel)
+        return furnitures
+
+    def _placefurniture(self):
+        random = rand.random()
+        if len(self.furnitures) >0:
+            if random < .5:
+                furniture = rand.choice(self.furnitures)
+                temp = furniture[0]
+                if furniture[1] >0:
+                    if temp != "S":
+                        temp += self.getfurnituredir()
+                    furniture[1] -=1
+                    if furniture[1] == 0:
+                        self.furnitures.remove(furniture)
+                    return temp
+
+    def getfurnituredir(self):
+        char ="N"
+        if self.direction == Direction.NORTH:
+            char = "E"
+        elif self.direction == Direction.EAST:
+            char = "S"
+        elif self.direction == Direction.SOUTH:
+            char = "W"
+        elif self.direction == Direction.WEST:
+            char = "N"
+
+        return char
+
+
 
 def main():
     floorplan = \
         [
             [
-                ['W', 'G', 'G', 'G', 'W', 'W'],
-                ['G', 'CO3', 'STW2', 'STW1', 'STW0', 'W'],
-                ['G', 'STS3', '0', '0', '0', 'W'],
-                ['G', 'STS4', '0', '0', '0', 'G'],
+                ['W', 'G', 'G', 'W', 'W', 'W'],
                 ['W', '0', '0', '0', '0', 'G'],
-                ['W', '0', '0', '0', '0', 'D'],
-                ['W', '0', '0', '0', '0', 'W'],
-                ['W', 'W', 'G', 'G', 'G', 'W'],
+                ['G', '0', '0', '0', '0', 'G'],
+                ['G', '0', '0', '0', '0', 'G'],
+                ['W', '0', '0', '0', 'E', 'D'],
+                ['W', 'G', 'G', 'W', 'W', 'W']
             ],
-            [
-                ['W', 'G', 'G', 'G', 'G', 'W'],
-                ['G', 'N', 'N', 'N', '0', 'W'],
-                ['G', 'N', '0', '0', '0', 'G'],
-                ['G', 'A', '0', '0', '0', 'G'],
-                ['G', '0', '0', '0', '0', 'W'],
-                ['G', '0', '0', '0', '0', 'W'],
-                ['W', '0', '0', '0', '0', 'W'],
-                ['W', 'W', 'G', 'G', 'G', 'W']
-            ]
         ]
+    # floorplan = \
+    #     [
+    #         [
+    #             ['W', 'W', 'W', 'G', 'G', 'W'],
+    #             ['W', '0', '0', '0', '0', 'W'],
+    #             ['G', '0', '0', '0', '0', 'W'],
+    #             ['G', 'STN4', '0', '0', 'E', 'D'],
+    #             ['G', 'STN3', '0', '0', '0', 'W'],
+    #             ['G', 'STN2', '0', '0', '0', 'W'],
+    #             ['G', 'CO2', 'STW1', 'STW0', '0', 'W'],
+    #             ['W', 'G', 'G', 'G', 'G', 'W']
+    #         ],
+    #         [
+    #             ['W', 'G', 'G', 'W', 'W', 'W'],
+    #             ['G', '0', '0', '0', '0', 'W'],
+    #             ['G', '0', '0', '0', '0', 'G'],
+    #             ['G', 'E', '0', '0', '0', 'G'],
+    #             ['G', 'N', '0', '0', '0', 'G'],
+    #             ['G', 'N', '0', '0', '0', 'G'],
+    #             ['W', 'N', 'N', '0', '0', 'W'],
+    #             ['W', 'G', 'G', 'G', 'W', 'W']
+    #         ]
+    #     ]
+    # floorplan = \
+    #     [
+    #         [
+    #             ['W', 'G', 'G', 'G', 'G', 'G', 'G', 'W', 'W', 'W'],
+    #             ['W', 'CO2', 'STE2', 'STE3', 'STE4', '0', '0', '0', '0', 'W'],
+    #             ['G', 'STN1', '0', '0', '0', '0', '0', '0', '0', 'W'],
+    #             ['G', 'STN0', '0', '0', '0', '0', '0', '0', '0', 'G'],
+    #             ['G', '0', '0', '0', '0', '0', '0', '0', '0', 'G'],
+    #             ['W', '0', '0', '0', '0', '0', '0', '0', 'E', 'D'],
+    #             ['W', 'G', 'G', 'W', 'W', 'W', 'G', 'G', 'G', 'W']
+    #         ],
+    #         [
+    #             ['W', 'G', 'G', 'W', 'G', 'G', 'W', 'W', 'W', 'W'],
+    #             ['W', 'N', 'N', 'N', 'E', '0', '0', '0', '0', 'G'],
+    #             ['G', 'N', '0', '0', '0', '0', '0', '0', '0', 'G'],
+    #             ['G', '0', '0', '0', '0', '0', '0', '0', '0', 'W'],
+    #             ['G', '0', '0', '0', '0', '0', '0', '0', '0', 'W'],
+    #             ['G', '0', '0', '0', '0', '0', '0', '0', '0', 'W'],
+    #             ['W', 'W', 'G', 'G', 'G', 'W', 'W', 'G', 'G', 'W']
+    #         ]
+    #     ]
+    # floorplan = \
+    #     [
+    #         [
+    #             ['W', 'G', 'G', 'G', 'W', 'W'],
+    #             ['G', 'CO3', 'STW2', 'STW1', 'STW0', 'W'],
+    #             ['G', 'STS3', '0', '0', '0', 'W'],
+    #             ['G', 'STS4', '0', '0', '0', 'G'],
+    #             ['W', '0', '0', '0', '0', 'G'],
+    #             ['W', '0', '0', '0', '0', 'D'],
+    #             ['W', '0', '0', '0', '0', 'W'],
+    #             ['W', 'W', 'G', 'G', 'G', 'W'],
+    #         ],
+    #         [
+    #             ['W', 'G', 'G', 'G', 'G', 'W'],
+    #             ['G', 'N', 'N', 'N', '0', 'W'],
+    #             ['G', 'N', '0', '0', '0', 'G'],
+    #             ['G', 'E', '0', '0', '0', 'G'],
+    #             ['G', '0', '0', '0', '0', 'W'],
+    #             ['G', '0', '0', '0', '0', 'W'],
+    #             ['W', '0', '0', '0', '0', 'W'],
+    #             ['W', 'W', 'G', 'G', 'G', 'W']
+    #         ]
+    #     ]
     # floorplan = [[
     #     ['W', 'W', 'G', 'G', 'G', 'G', 'G', 'W'],
     #     ['G', '0', '0', '0', '0', '0', '0', 'W'],

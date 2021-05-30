@@ -140,11 +140,12 @@ class House(Building):
         self.fill_box(BoundingBox(box,[sx,20,sz]),0) # clearing from wood and leaves
         self.modules.append(module)
 
-        self.modules.append(module.addfloor())
+        # self.modules.append(module.addfloor())
 
-        # r = random.random()
-        # if r < 0.3 and self.sizexmin >= 6 and self.sizezmin >=6:
-        #     self.modules.append(module.addfloor())
+        r = random.random()
+        # r =0.1
+        if r < 0.3 and self.sizexmin >= 6 and self.sizezmin >=6:
+            self.modules.append(module.addfloor())
 
 
     def create_walls(self):
@@ -419,7 +420,7 @@ class House(Building):
             dir = self.getrotationint(furniture[2])
             height = int(furniture[3])
             fur.Stair(self.level,xo,y,zo,dir,height)
-        elif furniture == "FN": #Fence
+        elif furniture == "WA": #Fence
             fur.Fence(self.level,xo,y,zo)
         elif furniture[0] == "F":  # Furnace
             dir = self.getrotationint(furniture[1])
