@@ -213,7 +213,7 @@ class Plot:
                 self.houseTiles.append(self.maxBoundingBox[largestPlot[1]+y][largestPlot[0]+x])
         
         self.houseBounds = box.BoundingBox((largestPlot[0] + self.offsetX + int(self.worldOffset.x), 0, largestPlot[1] + self.offsetY + int(self.worldOffset.y) + 1),(largestPlot[2]-2, 1, largestPlot[3]))
-        if self.houseBounds.width < 6 or self.houseBounds.length < 6:
+        if self.houseBounds.width < 8 or self.houseBounds.length < 8:
             #print("too small", self.houseBounds.width, self.houseBounds.length)
             return False
         

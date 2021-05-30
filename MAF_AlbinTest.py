@@ -12,6 +12,7 @@ import BlockIDs as Blocks
 from typing import List, Any
 import Road as Road
 from pygame.math import Vector2 as Vector
+from MAF_Utility import Direction
 from Building import House
 
 inputs = (
@@ -36,10 +37,10 @@ def perform(level, box, options):
     for r in range(itterations):
         roads.UpdatePlotAgents()
     
+    roads.PrintPlots()
     for p in roads.plots:
-        house = House(box, p.houseBounds, level, hgtMap, p.doorDir)
+        house = House(box, p.houseBounds, level, hgtMap, Direction(p.doorDir))
         house.generate()
-    #roads.PrintPlots()
 
 
 def createHeightMap(level, box):

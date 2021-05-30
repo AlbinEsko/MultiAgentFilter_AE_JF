@@ -116,10 +116,10 @@ class House(Building):
         # print(self.yard.size.x)
 
         # sx = random.randrange(6,12)
-        sx = randomalowed(self.sizexmin,self.sizexmax,self.yard.size.x)
+        sx = min(self.yard.size.x, self.sizexmax) # randomalowed(self.sizexmin,self.sizexmax,self.yard.size.x)
         # sx = 10
         sy = self.sizey
-        sz =randomalowed(self.sizezmin,self.sizezmax,self.yard.size.z)
+        sz = min(self.yard.size.z, self.sizezmax) # randomalowed(self.sizezmin,self.sizezmax,self.yard.size.z)
         # sz = 6
         # print("values")
         # print("sx = " + str(sx))
@@ -128,8 +128,8 @@ class House(Building):
         x = self.yard.size.x - sx
         z = self.yard.size.z - sz
 
-        ox = self.yard.origin.x + random.randrange(0,x)
-        oz = self.yard.origin.z + random.randrange(0,z)
+        ox = self.yard.origin.x #+ random.randrange(0,x)
+        oz = self.yard.origin.z #+ random.randrange(0,z)
         oy = self.heightmap[oz - self.box.origin.z][ox - self.box.origin.x] + 1
 
 
