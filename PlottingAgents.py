@@ -118,6 +118,7 @@ class Plot:
         #self.boundingHeight
         #self.offsetX
         #self.offsetY
+        #self.houseBounds
         self.houseTiles = []
         self.worldOffset = worldOffset
         self.doorDir = 0

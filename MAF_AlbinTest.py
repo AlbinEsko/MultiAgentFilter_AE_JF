@@ -12,6 +12,7 @@ import BlockIDs as Blocks
 from typing import List, Any
 import Road as Road
 from pygame.math import Vector2 as Vector
+from Building import House
 
 inputs = (
     ("test1", "label"),
@@ -34,6 +35,10 @@ def perform(level, box, options):
     roads.CreatePloters(5)
     for r in range(itterations):
         roads.UpdatePlotAgents()
+    
+    for p in roads.plots:
+        house = House(box, p.houseBounds, level, hgtMap, p.doorDir)
+        house.generate()
     #roads.PrintPlots()
 
 
