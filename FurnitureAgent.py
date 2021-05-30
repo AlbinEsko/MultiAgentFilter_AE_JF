@@ -6,7 +6,6 @@ import random as rand
 
 _Surrounding = namedtuple("_Surrounding",("forward","right","backward","left"))
 # __name__ = "__main__"
-obstacles = ["W", "G", ""]
 
 
 class Position():
@@ -77,7 +76,7 @@ class FurnitureAgent:
         while True:
             if len(self.placementqueue) > 0:
                 self.UpdateBlock(self.placementqueue.popleft())
-            print("Current Direction: " + str(self.direction))
+            # print("Current Direction: " + str(self.direction))
 
             surrondingobjects = self._getsurroundingobjects()
 
@@ -124,7 +123,7 @@ class FurnitureAgent:
             self.move()
             steps += 1
             if self.GetCurrentBlock() == "E" or steps > 99:
-                print("Back to start, steps taken: " + str(steps))
+                # print("Back to start, steps taken: " + str(steps))
                 if len(self.floorplans) > self.level+1:
                     self.setupnextlevel()
                     print("New level")
