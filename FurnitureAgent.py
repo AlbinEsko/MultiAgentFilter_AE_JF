@@ -92,10 +92,14 @@ class FurnitureAgent:
             if surrondingobjects.left == "N" and self.GetCurrentBlock() != "E":
                 self.UpdateBlock("WA")
 
-
+            escapeCounter = 0
             while surrondingobjects.forward not in ["0","E"]:
                 self.turnright()
                 surrondingobjects = self._getsurroundingobjects()
+                escapeCounter += 1
+                if escapeCounter > 100:
+                    print("breaking out of infinite loop")
+                    break
 
 
 

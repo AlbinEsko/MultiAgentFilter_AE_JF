@@ -33,13 +33,14 @@ def perform(level, box, options):
     itterations =box.length/2 + box.width/2
     for r in range(itterations):
         roads.UpdateAgents()
+    roads.CleanObstructions()
     roads.CreatePloters(5)
     for r in range(itterations):
         roads.UpdatePlotAgents()
     
     #roads.PrintPlots()
     for p in roads.plots:
-        house = House(box, p.houseBounds, level, hgtMap, Direction(p.doorDir))
+        house = House(box, p.houseBounds, level, p.bottomLevel, Direction(p.doorDir))
         house.generate()
 
 

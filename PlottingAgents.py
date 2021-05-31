@@ -63,6 +63,7 @@ class PlotAgent:
     
     def Evaluate(self):
         posIndex = int(self.pos.x) + int(self.pos.y) * self.roadSystem.width
+        print("plot agent tile index:",posIndex, int(self.pos.x), int(self.pos.y), self.pos)
         currentNode = self.roadSystem.graph[posIndex]
         if currentNode.roadVal == 0:
             self.dir.rotate_ip(Random.randint(160,200))

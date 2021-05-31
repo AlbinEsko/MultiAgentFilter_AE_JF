@@ -11,13 +11,13 @@ import FurnitureAgent as furagent
 
 
 class Building(object):
-    def __init__(self, box, yard, level, heightmap, dir_to_road):
+    def __init__(self, box, yard, level, groundLevel, dir_to_road):
         # type: (BoundingBox, MCLevel, List[List[int]], Direction) -> None
         print("Building")
         self.box = box
         self.yard = yard
         self.level = level
-        self.heightmap = heightmap
+        self.groundLevel = groundLevel + 1
         self.dir_to_road = dir_to_road
         self.modules = []
         self.floor = []
@@ -40,8 +40,8 @@ def randomalowed(lower, max, limit):
 
 
 class House(Building):
-    def __init__(self, box, yard, level, heightmap, dir_to_road):
-        Building.__init__(self, box, yard, level, heightmap, dir_to_road)
+    def __init__(self, box, yard, level, groundLevel, dir_to_road):
+        Building.__init__(self, box, yard, level, groundLevel, dir_to_road)
 
     def generate(self):
         # type: (int) -> House
@@ -130,7 +130,7 @@ class House(Building):
 
         ox = self.yard.origin.x #+ random.randrange(0,x)
         oz = self.yard.origin.z #+ random.randrange(0,z)
-        oy = self.heightmap[oz - self.box.origin.z][ox - self.box.origin.x] + 1
+        oy = self.groundLevel #self.heightmap[oz - self.box.origin.z][ox - self.box.origin.x] + 1
 
 
 

@@ -14,6 +14,7 @@ import Dijkstra
 import utilityFunctions as uf
 import RoadAgents
 import PlottingAgents
+import BlockIDs as Blocks
 
 class RoadSystem:
     agents = []
@@ -133,10 +134,21 @@ class RoadSystem:
             for x in (-1, 0, 1):
                 if self.level.blockAt(int(self.origo.x + X + x), height, int(self.origo.y + Y +y)) != 0:
                     uf.setBlock(self.level, (45,0), int(self.origo.x + X + x), height, int(self.origo.y + Y + y))
-                    uf.setBlock(self.level, (0,0), int(self.origo.x + X + x), height+1, int(self.origo.y + Y + y))
-                    uf.setBlock(self.level, (0,0), int(self.origo.x + X + x), height+2, int(self.origo.y + Y + y))
-                    uf.setBlock(self.level, (0,0), int(self.origo.x + X + x), height+3, int(self.origo.y + Y + y))
+                    #for i in range(3):
+                        #block = self.level.blockAt(int(self.origo.x + X + x), height + i + 1, int(self.origo.y + Y +y)) 
+                        #if not block in Blocks.getGrounds():
+                            #uf.setBlock(self.level, (0,0), int(self.origo.x + X + x), height + i + 1, int(self.origo.y + Y + y))
         self.RadiateFromPlacedRoad(X, Y)
+    
+    def CleanObstructions(self):
+        for t in self.graph.graph:
+            if t.roadVal == 99:
+                for y in (-1, 0, 1):
+                    for x in (-1, 0, 1):
+                        for i in range(3):
+                            block = self.level.blockAt(int(self.origo.x + t.x + x), t.height + i + 1, int(self.origo.y + t.y +y)) 
+                            if block != 45:
+                                uf.setBlock(self.level, (0,0), int(self.origo.x + t.x + x), t.height + i + 1, int(self.origo.y + t.y + y))
     
     def RadiateFromPlacedRoad(self, X, Y):
         for i in range(self.roadCoverage):
