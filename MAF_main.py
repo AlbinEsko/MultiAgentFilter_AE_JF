@@ -16,7 +16,8 @@ from MAF_Utility import Direction
 from Building import House
 
 inputs = (
-    ("test1", "label"),
+    ("A multi agent settlement generator", "label"),
+    ("By: Albin Esko & Johan Fritiofsson", "label"),
 )
 
 
