@@ -26,16 +26,21 @@ def perform(level, box, options):
     print("height map and liquid map made")
     #markRegions(level, box, hgtMap, liquidmap)
     boxOrigo = Vector(box.minx, box.minz)
+    print("Creating road graph")
     roads = Road.RoadSystem(level,box,hgtMap,liquidmap, boxOrigo)
     print("creating agents")
     roads.CreateExtendors(35)
     roads.CreateConnectors(50)
     itterations =box.length/2 + box.width/2
+    print("Running road agents")
     for r in range(itterations):
+        print("Road Creation: " + str(r) + "/" + str(itterations))
         roads.UpdateAgents()
     roads.CleanObstructions()
     roads.CreatePloters(5)
+    print("Running Plot agents")
     for r in range(itterations):
+        print("Plot Creation: " + str(r) + "/" + str(itterations))
         roads.UpdatePlotAgents()
     
     #roads.PrintPlots()
@@ -54,10 +59,12 @@ def createHeightMap(level, box):
         #print(r)
 
     for z in range(column):  # range(box.minx, box.maxx, 1):
-        print(z,"/",column)
+        print("Columns scanned: " + str(z) + "/" + str(column))
         for x in range(row):  # range(box.minz, box.maxz, 1):
             for y in range(box.maxy, box.miny, -1):
                 block = level.blockAt(box.minx+x, y, box.minz+z) 
+                if block == 0:
+                    continue
                 if block in Blocks.getGrounds():
                     heightmap[z][x] = y
                     blockabove = level.blockAt(box.minx+x, y+1, box.minz+z)

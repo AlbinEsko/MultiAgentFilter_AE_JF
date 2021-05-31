@@ -66,53 +66,6 @@ class ExtendorAgent:
             #print("found unserviced patch")
             self.dijkstra()
             
-    '''follow roadmap distance to existing road and log every step'''
-    def MakeRoadWithDistance(self):
-        path = []
-        path.append([int(self.pos.x), (int(self.pos.y))])
-        z=0
-        while True:
-            print(z)
-            z = z+1
-            X = path[len(path)-1][0]
-            Y = path[len(path)-1][1]
-            if self.roadSystem.roadMap[Y][X] == 99:
-                break
-            value=0
-            nextX = -1
-            nextY = -1
-            topFree = Y-1 >= 0
-            leftFree = X-1 >= 0
-            botFree = Y+1 < self.roadSystem.height
-            rightFree = X+1 < self.roadSystem.width
-            if leftFree:
-                if self.roadSystem.roadMap[Y][X-1] > value:
-                    value, nextX, nextY = self.CheckValue(X-1,Y,value)
-            if topFree:
-                if self.roadSystem.roadMap[Y-1][X] > value:
-                    value, nextX, nextY = self.CheckValue(X,Y-1,value)
-            if rightFree:
-                if self.roadSystem.roadMap[Y][X+1] > value:
-                    value, nextX, nextY = self.CheckValue(X+1,Y,value)
-            if botFree:
-                if self.roadSystem.roadMap[Y+1][X] > value:
-                    value, nextX, nextY = self.CheckValue(X,Y+1,value)
-            if leftFree and topFree:
-                if self.roadSystem.roadMap[Y-1][X-1] > value:
-                    value, nextX, nextY = self.CheckValue(X-1,Y-1,value)
-            if topFree and rightFree:
-                if self.roadSystem.roadMap[Y-1][X+1] > value:
-                    value, nextX, nextY = self.CheckValue(X+1,Y-1,value)
-            if botFree and rightFree:
-                if self.roadSystem.roadMap[Y+1][X+1] > value:
-                    value, nextX, nextY = self.CheckValue(X+1,Y+1,value)
-            if botFree and leftFree:
-                if self.roadSystem.roadMap[Y+1][X-1] > value:
-                    value, nextX, nextY = self.CheckValue(X-1,Y+1,value)
-            #print(value, nextX, nextY)
-            path.append([nextX, nextY])
-            self.DebugPrintRoad(path)
-            
     def DebugPrintRoad(self, path):
         while len(path) != 0:
             pos = path.roadTiles.pop()
@@ -270,7 +223,7 @@ class ConnectorAgent:
         if edges == None or len(edges) == 0:
             return
         path = Road.Path(edges, self.roadSystem.width)
-        print("Suggesting connection")
+        #print("Suggesting connection")
         if self.roadSystem.Analyze(path, 2):
             self.pos = path.getLastCoord()
         

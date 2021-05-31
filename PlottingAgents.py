@@ -63,7 +63,7 @@ class PlotAgent:
     
     def Evaluate(self):
         posIndex = int(self.pos.x) + int(self.pos.y) * self.roadSystem.width
-        print("plot agent tile index:",posIndex, int(self.pos.x), int(self.pos.y), self.pos)
+        #print("plot agent tile index:",posIndex, int(self.pos.x), int(self.pos.y), self.pos)
         currentNode = self.roadSystem.graph[posIndex]
         if currentNode.roadVal == 0:
             self.dir.rotate_ip(Random.randint(160,200))
@@ -222,8 +222,8 @@ class Plot:
         boxYcentre = self.houseBounds.minz + self.houseBounds.length/2
         centToEntX = int(self.entranceCoords.x) + int(self.worldOffset.x) - boxXcentre
         centToEntY = int(self.entranceCoords.y) + int(self.worldOffset.y) - boxYcentre
-        print(boxXcentre, boxYcentre)
-        print(centToEntX, centToEntY)
+        #print(boxXcentre, boxYcentre)
+        #print(centToEntX, centToEntY)
         if abs(centToEntX) > abs(centToEntY):
             if centToEntX < 0:
                 self.doorDir = 4
@@ -235,7 +235,7 @@ class Plot:
             else:
                 self.doorDir = 3
                 
-        print("housable plot found", self.houseBounds.width, self.houseBounds.length, self.doorDir)
+        #print("housable plot found", self.houseBounds.width, self.houseBounds.length, self.doorDir)
         return True
     
     def FillPlot(self, graph, stopRoadVal, level):
