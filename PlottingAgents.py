@@ -295,11 +295,11 @@ class Plot:
         y = self.bottomLevel
         while airBelow:
             airBelow = False
-            for z in range(self.houseBounds.length):
-                for x in range(self.houseBounds.width):
-                    block = level.blockAt(self.houseBounds.minx + x, y, self.houseBounds.minz + z) 
+            for z in range(self.houseBounds.length + 2):
+                for x in range(self.houseBounds.width + 2):
+                    block = level.blockAt(self.houseBounds.minx + x - 1, y, self.houseBounds.minz + z - 1) 
                     if not block in Blocks.getGrounds():
-                        uf.setBlock(level, (98,0), self.houseBounds.minx + x, y, self.houseBounds.minz + z)
+                        uf.setBlock(level, (98,0), self.houseBounds.minx + x - 1, y, self.houseBounds.minz + z - 1)
                         airBelow = True
             y += -1
         

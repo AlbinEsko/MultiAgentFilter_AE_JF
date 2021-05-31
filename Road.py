@@ -103,7 +103,7 @@ class RoadSystem:
         if(suggestion.totalWeight > manhatDist * self.multiplier): #some value dependent on the expeced lenth of a path
             #print("too costly road")
             return False
-        if(suggestion.largestDiff > 3):
+        if(suggestion.largestDiff > 2):
             #print("too steep section")
             return False
         self.CreateRoad(suggestion, data)
