@@ -39,9 +39,26 @@ def randomalowed(lower, max, limit):
     return r
 
 
-class House(Building):
+class House(object):
     def __init__(self, box, yard, level, groundLevel, dir_to_road):
-        Building.__init__(self, box, yard, level, groundLevel, dir_to_road)
+        # super(self, box, yard, level, groundLevel, dir_to_road)
+        # Building.__init__(self, box, yard, level, groundLevel, dir_to_road)
+        self.box = box
+        self.yard = yard
+        self.level = level
+        self.groundLevel = groundLevel + 1
+        self.dir_to_road = dir_to_road
+        self.modules = []
+        self.floor = []
+        self.doors = []
+        self.windows = []
+        self.walls = []
+        self.floorplans = []
+        self.sizexmin = 6
+        self.sizexmax = 12
+        self.sizezmin = 6
+        self.sizezmax = 12
+        self.sizey = 5
 
     def generate(self):
         # type: (int) -> House
